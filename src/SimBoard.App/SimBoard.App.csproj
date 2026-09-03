@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SimBoard.Parts\SimBoard.Parts.csproj" />
     <ProjectReference Include="..\SimBoard.Spice\SimBoard.Spice.csproj" />
+    <ProjectReference Include="..\SimBoard.Document\SimBoard.Document.csproj" />
   </ItemGroup>
 </Project>

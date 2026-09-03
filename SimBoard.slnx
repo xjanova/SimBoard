@@ -1,9 +1,11 @@
 <Solution>
   <Folder Name="/spikes/">
     <Project Path="spikes/S1.NgspiceSidecar/S1.NgspiceSidecar.csproj" />
+    <Project Path="spikes/S5.LiveCircuit/S5.LiveCircuit.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/SimBoard.App/SimBoard.App.csproj" />
+    <Project Path="src/SimBoard.Document/SimBoard.Document.csproj" />
     <Project Path="src/SimBoard.Parts/SimBoard.Parts.csproj" />
     <Project Path="src/SimBoard.Spice/SimBoard.Spice.csproj" />
   </Folder>
