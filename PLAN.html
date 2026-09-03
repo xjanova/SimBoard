@@ -1,0 +1,546 @@
+<title>แผนสร้าง SimBoard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  /* dark base — palette lifted from the product's own workspace tokens */
+  --ink:#12161b; --ink2:#171c22; --ink3:#0e1013; --ink4:#1c232b;
+  --line:#2b3440; --line2:#3a4652;
+  --fg:#dbe4ec; --fg2:#8fa8bd; --fg3:#7f97ab;
+  --accent:#e8b04a; --accent2:#8a6420;
+  --ok:#5fd0a8; --data:#6fd3e0; --warn:#c9a227; --crit:#ff7a5f;
+  --ai:#b79ad4; --copper:#c98b4b;
+  --sans:"IBM Plex Sans Thai","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Lucida Console",monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --ink:#eef1f4; --ink2:#ffffff; --ink3:#e3e8ed; --ink4:#f7f9fa;
+    --line:#ccd5dd; --line2:#a9b8c4;
+    --fg:#14202a; --fg2:#4a5f70; --fg3:#63788a;
+    --accent:#8a6420; --accent2:#d8b473;
+    --ok:#1c7a3e; --data:#1d6d79; --warn:#836410; --crit:#a33526;
+    --ai:#654794; --copper:#94652f;
+  }
+}
+:root[data-theme="light"]{
+  --ink:#eef1f4; --ink2:#ffffff; --ink3:#e3e8ed; --ink4:#f7f9fa;
+  --line:#ccd5dd; --line2:#a9b8c4;
+  --fg:#14202a; --fg2:#4a5f70; --fg3:#63788a;
+  --accent:#8a6420; --accent2:#d8b473;
+  --ok:#1c7a3e; --data:#1d6d79; --warn:#836410; --crit:#a33526;
+  --ai:#654794; --copper:#94652f;
+}
+
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.72;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:44px 22px 96px;display:flex;flex-direction:column;gap:40px}
+p{margin:0;max-width:70ch}
+.stack{display:flex;flex-direction:column;gap:14px}
+.tight{gap:9px}
+
+/* ── masthead ─────────────────────────────── */
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font-size:clamp(30px,5.4vw,46px);line-height:1.14;font-weight:700;letter-spacing:-.015em;
+  text-wrap:balance}
+h1 .me{color:var(--accent)}
+.logo{display:block;width:min(392px,86%);height:auto;margin:0 0 2px}
+.lede{font-size:17px;line-height:1.62;color:var(--fg2);max-width:60ch}
+/* status bar — the app's own metadata strip, as the document's */
+.statusbar{display:flex;flex-wrap:wrap;gap:2px;font-family:var(--mono);font-size:10.5px;
+  color:var(--fg3);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 0}
+.statusbar span{padding:0 11px;border-right:1px solid var(--line)}
+.statusbar span:last-child{border-right:0}
+.statusbar b{color:var(--fg2);font-weight:500}
+
+/* ── panels — every block is a panel from the app it describes ── */
+.panel{border:1px solid var(--line);background:var(--ink2)}
+.panel > .cap{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--fg2);background:var(--ink4);
+  border-bottom:1px solid var(--line);padding:7px 13px;display:flex;justify-content:space-between;gap:12px}
+.panel > .cap .n{color:var(--accent);font-variant-numeric:tabular-nums}
+.panel > .cap.ai{color:var(--ai)}
+.panel > .body{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+
+h2{margin:0;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--accent);display:flex;align-items:baseline;gap:11px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+h3{margin:0;font-size:15.5px;font-weight:600;color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:16px}
+
+/* ── verdict ─────────────────────────────── */
+.verdict{border:1px solid var(--accent2);background:var(--ink2);
+  box-shadow:inset 3px 0 0 var(--accent)}
+.verdict .body{padding:20px 22px;gap:16px}
+.verdict h3{font-size:20px;letter-spacing:-.01em}
+.spec{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin:0}
+@media (max-width:760px){.spec{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:460px){.spec{grid-template-columns:1fr}}
+.spec div{background:var(--ink2);padding:11px 13px;display:flex;flex-direction:column;gap:3px}
+.spec dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
+.spec dd{margin:0;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--fg)}
+.spec dd small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--fg3);line-height:1.5}
+
+/* ── tables ──────────────────────────────── */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--fg3);border-bottom:1px solid var(--line2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.crit-col{color:var(--accent);font-weight:500}
+td small{display:block;color:var(--fg3);font-size:11.5px;line-height:1.5}
+
+/* scoring marks */
+.m{font-family:var(--mono);font-weight:600;font-size:13px}
+.m.yes{color:var(--ok)} .m.ok{color:var(--fg2)} .m.mid{color:var(--warn)} .m.no{color:var(--crit)}
+.win{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+th.win{color:var(--accent)}
+
+/* ── roadmap gantt ───────────────────────── */
+.gantt{display:flex;flex-direction:column;gap:5px;min-width:600px}
+.grow{display:grid;grid-template-columns:118px 1fr;gap:11px;align-items:center}
+.glabel{font-family:var(--mono);font-size:10.5px;color:var(--fg2);text-align:right;white-space:nowrap}
+.glabel b{color:var(--accent);font-weight:600}
+.gtrack{display:grid;grid-template-columns:repeat(73,1fr);height:17px;align-items:center;
+  background:linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/ calc(100%/5.615) 100%}
+.gbar{height:13px;background:var(--accent2);border:1px solid var(--accent);
+  display:flex;align-items:center;padding:0 5px}
+.gbar span{font-family:var(--mono);font-size:9px;color:var(--fg);white-space:nowrap}
+.gbar.mvp{background:var(--accent);border-color:var(--accent)}
+.gbar.mvp span{color:var(--ink)}
+.gaxis{display:grid;grid-template-columns:118px 1fr;gap:11px;margin-top:2px}
+.gticks{display:grid;grid-template-columns:repeat(73,1fr);font-family:var(--mono);font-size:9.5px;color:var(--fg3)}
+.gticks i{grid-row:1;font-style:normal;border-left:1px solid var(--line);padding-left:4px}
+.gticks i.mvpline{border-left:1px dashed var(--accent);height:100%;padding:0}
+
+/* ── risk register ───────────────────────── */
+.risks{display:flex;flex-direction:column;gap:1px;background:var(--line)}
+.risk{background:var(--ink2);padding:12px 15px;display:grid;grid-template-columns:76px 1fr;gap:14px}
+.risk .sev{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding-top:3px;border-left:2px solid;padding-left:9px}
+.risk.s1 .sev{color:var(--crit);border-color:var(--crit)}
+.risk.s2 .sev{color:var(--warn);border-color:var(--warn)}
+.risk.s3 .sev{color:var(--fg3);border-color:var(--line2)}
+.risk .rb{display:flex;flex-direction:column;gap:5px}
+.risk b{font-weight:600;font-size:14.5px}
+.risk p{font-size:13.5px;line-height:1.62;color:var(--fg2)}
+.fix{font-size:13px;color:var(--fg);border-left:1px solid var(--line2);padding-left:11px}
+.fix::before{content:"ทางลด · ";font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ok)}
+
+/* ── architecture stack ──────────────────── */
+.arch{display:flex;flex-direction:column;gap:4px}
+.tier{display:grid;grid-template-columns:96px 1fr;gap:11px;align-items:stretch}
+.tname{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--fg3);
+  text-align:right;padding-top:9px}
+.mods{display:flex;flex-wrap:wrap;gap:4px}
+.mod{border:1px solid var(--line2);background:var(--ink4);padding:6px 10px;flex:1 1 auto;min-width:150px}
+.mod code{font-family:var(--mono);font-size:11.5px;color:var(--fg);display:block;font-weight:500}
+.mod em{font-style:normal;font-size:11.5px;color:var(--fg3);line-height:1.45;display:block;margin-top:1px}
+.mod.hot{border-color:var(--accent2);box-shadow:inset 2px 0 0 var(--accent)}
+.mod.ext{border-style:dashed;border-color:var(--data)}
+.mod.ext code{color:var(--data)}
+.wire{display:grid;grid-template-columns:96px 1fr;gap:11px}
+.wire span{grid-column:2;font-family:var(--mono);font-size:9.5px;color:var(--fg3);padding-left:2px}
+
+/* ── lists ───────────────────────────────── */
+ol.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:1px;background:var(--line)}
+ol.steps > li{background:var(--ink2);padding:13px 15px;display:grid;grid-template-columns:34px 1fr;gap:12px}
+ol.steps .sn{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);padding-top:3px}
+ol.steps .sb{display:flex;flex-direction:column;gap:5px}
+ol.steps b{font-weight:600;font-size:14.5px}
+ol.steps p{font-size:13.5px;color:var(--fg2)}
+.pass{font-family:var(--mono);font-size:11.5px;color:var(--ok);border-left:1px solid var(--ok);padding-left:10px;
+  line-height:1.6}
+ul.plain{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+ul.plain li{display:grid;grid-template-columns:15px 1fr;gap:9px;font-size:13.5px;color:var(--fg2);line-height:1.6}
+ul.plain li::before{content:"·";font-family:var(--mono);color:var(--accent);font-weight:600;text-align:center}
+ul.plain b{color:var(--fg);font-weight:600}
+code{font-family:var(--mono);font-size:.9em;color:var(--data);
+  background:color-mix(in srgb,var(--data) 11%,transparent);padding:1px 4px}
+.note{font-size:13px;color:var(--fg3);border-left:2px solid var(--line2);padding-left:12px;max-width:66ch}
+a{color:var(--accent)}
+a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:620px){
+  .risk,.tier,.wire,.grow,.gaxis{grid-template-columns:1fr}
+  .tname,.glabel{text-align:left}
+  ol.steps > li{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+
+<header class="stack">
+  <div class="eyebrow">แผนพัฒนา · จาก design handoff → โปรดักชัน</div>
+  <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5764 1418" role="img" aria-label="SimBoard">
+  <g transform="translate(140 249.7) scale(14.61438)"><rect x="2" y="2" width="60" height="60" rx="13" fill="#12161b" stroke="#8a6420" stroke-width="2"/><path d="M13 26 H21 V16 H33 V26 H43 V16 H51" fill="none" stroke="#5fd0a8" stroke-width="3" stroke-linejoin="round" stroke-linecap="square"/><path d="M13 48 H27 L35 40 H39" fill="none" stroke="#e8b04a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="40" r="8" fill="#e8b04a"/><circle cx="46" cy="40" r="3.2" fill="#12161b"/></g>
+  <g transform="translate(1225.3 998.0)">
+  <path transform="translate(0.00 0) scale(1.000000 -1.000000)" fill="var(--fg,#dbe4ec)" d="M299 -12Q209 -12 146.5 20.0Q84 52 39 104L128 190Q164 148 208.5 126.0Q253 104 307 104Q368 104 399.0 130.5Q430 157 430 202Q430 237 410.0 259.0Q390 281 335 291L269 301Q60 334 60 504Q60 551 77.5 589.0Q95 627 128.0 654.0Q161 681 207.5 695.5Q254 710 313 710Q392 710 451.0 684.0Q510 658 552 607L462 522Q436 554 399.0 574.0Q362 594 306 594Q249 594 220.5 572.5Q192 551 192 512Q192 472 215.0 453.0Q238 434 289 425L354 413Q460 394 510.5 345.5Q561 297 561 210Q561 160 543.5 119.5Q526 79 492.5 49.5Q459 20 410.5 4.0Q362 -12 299 -12Z"/>
+  <path transform="translate(589.00 0) scale(1.000000 -1.000000)" fill="var(--fg,#dbe4ec)" d="M74 0V522H202V0Z"/>
+  <path transform="translate(843.00 0) scale(1.000000 -1.000000)" fill="var(--fg,#dbe4ec)" d="M74 0V522H202V435H207Q222 476 255.0 505.0Q288 534 347 534Q401 534 440.0 508.0Q479 482 498 429H500Q514 473 555.5 503.5Q597 534 660 534Q737 534 778.5 481.0Q820 428 820 330V0H692V317Q692 429 608 429Q589 429 571.5 423.5Q554 418 540.5 407.5Q527 397 519.0 381.5Q511 366 511 345V0H383V317Q383 429 299 429Q281 429 263.5 423.5Q246 418 232.5 407.5Q219 397 210.5 381.5Q202 366 202 345V0Z"/>
+  <path transform="translate(1709.00 0) scale(1.000000 -1.000000)" fill="var(--accent,#e8b04a)" d="M82 698H405Q448 698 482.5 685.0Q517 672 541.0 649.0Q565 626 577.5 592.5Q590 559 590 519Q590 479 579.5 451.5Q569 424 551.5 406.0Q534 388 511.5 379.0Q489 370 465 369V363Q488 363 514.5 354.0Q541 345 563.5 325.5Q586 306 601.0 275.5Q616 245 616 200Q616 158 602.5 121.5Q589 85 565.0 58.0Q541 31 508.0 15.5Q475 0 436 0H82ZM214 112H398Q436 112 457.0 131.5Q478 151 478 188V222Q478 259 457.0 279.0Q436 299 398 299H214ZM214 407H377Q413 407 433.0 426.5Q453 446 453 481V512Q453 547 433.0 566.5Q413 586 377 586H214Z"/>
+  <path transform="translate(2350.00 0) scale(1.000000 -1.000000)" fill="var(--accent,#e8b04a)" d="M281 -12Q225 -12 180.5 7.0Q136 26 104.5 62.0Q73 98 56.0 148.5Q39 199 39 262Q39 325 56.0 375.0Q73 425 104.5 460.5Q136 496 180.5 515.0Q225 534 281 534Q337 534 382.0 515.0Q427 496 458.5 460.5Q490 425 507.0 375.0Q524 325 524 262Q524 199 507.0 148.5Q490 98 458.5 62.0Q427 26 382.0 7.0Q337 -12 281 -12ZM281 91Q332 91 361.0 122.0Q390 153 390 213V310Q390 369 361.0 400.0Q332 431 281 431Q231 431 202.0 400.0Q173 369 173 310V213Q173 153 202.0 122.0Q231 91 281 91Z"/>
+  <path transform="translate(2891.00 0) scale(1.000000 -1.000000)" fill="var(--accent,#e8b04a)" d="M458 0Q416 0 391.5 24.5Q367 49 361 90H355Q342 39 302.0 13.5Q262 -12 203 -12Q123 -12 80.0 30.0Q37 72 37 142Q37 223 95.0 262.5Q153 302 260 302H349V340Q349 384 326.0 408.0Q303 432 252 432Q207 432 179.5 412.5Q152 393 133 366L57 434Q86 479 134.0 506.5Q182 534 261 534Q367 534 422.0 486.0Q477 438 477 348V102H529V0ZM246 81Q289 81 319.0 100.0Q349 119 349 156V225H267Q167 225 167 161V144Q167 112 187.5 96.5Q208 81 246 81Z"/>
+  <path transform="translate(3428.00 0) scale(1.000000 -1.000000)" fill="var(--accent,#e8b04a)" d="M74 0V522H202V414H207Q212 435 222.5 454.5Q233 474 250.0 489.0Q267 504 290.5 513.0Q314 522 345 522H373V401H333Q268 401 235.0 382.0Q202 363 202 320V0Z"/>
+  <path transform="translate(3799.00 0) scale(1.000000 -1.000000)" fill="var(--accent,#e8b04a)" d="M398 87H393Q379 42 340.0 15.0Q301 -12 249 -12Q150 -12 97.5 59.0Q45 130 45 262Q45 393 97.5 463.5Q150 534 249 534Q301 534 340.0 507.5Q379 481 393 436H398V740H526V0H398ZM290 94Q336 94 367.0 116.0Q398 138 398 179V345Q398 383 367.0 406.0Q336 429 290 429Q240 429 209.5 395.5Q179 362 179 306V216Q179 160 209.5 127.0Q240 94 290 94Z"/>
+  <circle cx="727.00" cy="-616.00" r="130.0" fill="var(--accent,#e8b04a)"/>
+  <circle cx="727.00" cy="-616.00" r="51.0" fill="var(--ink,#12161b)"/>
+  <circle cx="2631.50" cy="-261.00" r="62.0" fill="var(--accent,#e8b04a)"/>
+  <rect x="896.28" y="60.0" width="213.12" height="75.0" fill="var(--accent,#e8b04a)"/>
+  <rect x="1180.44" y="60.0" width="213.12" height="75.0" fill="var(--accent,#e8b04a)"/>
+  <rect x="1464.60" y="60.0" width="213.12" height="75.0" fill="var(--accent,#e8b04a)"/>
+  <rect x="0" y="195.0" width="4399.00" height="62.0" fill="var(--accent,#e8b04a)"/>
+  <circle cx="0" cy="226.0" r="85.0" fill="var(--accent,#e8b04a)"/>
+  </g>
+</svg>
+  <h1>แผนสร้างของจริง</h1>
+  <p class="lede">สเปกที่ได้มาสมบูรณ์ระดับพิกเซล — 10 หน้าจอ 7 ธีม สองภาษา ครบทุก hex ทุกขนาด สิ่งที่ยังไม่มีคือคำตอบว่า <em>เขียนด้วยอะไร</em> และ <em>ลำดับไหน</em> เอกสารนี้ตอบสองข้อนั้น</p>
+  <div class="statusbar">
+    <span>ที่มา <b>design_handoff_electrobench</b></span>
+    <span>10 จอ · 7 ธีม · TH/EN</span>
+    <span>เครื่องนี้มี <b>.NET 10 · Node 24 · Python 3.12</b></span>
+    <span>ไม่มี <b>Rust · C++ toolchain</b></span>
+    <span>03-09-2026</span>
+  </div>
+</header>
+
+<!-- ════ VERDICT ════ -->
+<section class="sec">
+  <h2>คำตอบสั้น</h2>
+  <div class="panel verdict">
+    <div class="body">
+      <h3>ใช่ค่ะ — C# เหมาะที่สุดกับงานนี้ และเหมาะด้วยเหตุผลทางเทคนิคจริง ไม่ใช่เพราะคุ้นมือ</h3>
+      <p>ตัวชี้ขาดไม่ใช่ว่าภาษาไหนเขียน UI สวยกว่า แต่คือ <b>อะไรอยู่ในโปรเซสเดียวกับ ngspice ได้</b> โดยไม่ต้องขนบัฟเฟอร์ waveform หลักแสนถึงสิบล้านจุดข้ามกำแพงภาษาทุกครั้งที่กด Play — และภาษาไหนเขียน geometry kernel กับ autorouter ได้ในภาษาเดียวกับ UI โดยไม่ต้องมีภาษาที่สอง C# ชนะทั้งสองข้อ</p>
+      <dl class="spec">
+        <div><dt>ภาษา / รันไทม์</dt><dd>C# 13 · .NET 10<small>ติดตั้งในเครื่องแล้ว (SDK 10.0.303)</small></dd></div>
+        <div><dt>UI framework</dt><dd>Avalonia 11<small>ControlTemplate + DynamicResource แมป 1:1 กับตาราง token 7 ธีม</small></dd></div>
+        <div><dt>เรนเดอร์พื้นที่ทำงาน</dt><dd>SkiaSharp<small>custom draw op → SKCanvas ตรง ไม่ผ่าน DOM/visual tree</small></dd></div>
+        <div><dt>เอนจินซิมูเลชัน</dt><dd>ngspice<small>รันเป็น sidecar process — ห้ามเขียน SPICE เอง</small></dd></div>
+        <div><dt>คลังอุปกรณ์</dt><dd>SQLite + FTS5<small>ค้น 8,000+ ชิ้นแบบ virtualized</small></dd></div>
+        <div><dt>ไฟล์โปรเจกต์ <code>.sbp</code></dt><dd>zip + JSON<small>เปิดด้วยมือได้ · diff ใน git ได้ · เวอร์ชันได้</small></dd></div>
+      </dl>
+      <p class="note">handoff แนะนำ Tauri + React + TypeScript ไว้ — ข้อแนะนำนั้นเขียนจากมุมนักออกแบบ และถูกต้องถ้ามองแค่ชั้น UI (ต้นแบบเป็น CSS custom properties อยู่แล้ว ย้ายเข้า React ง่ายที่สุด) แต่มันประเมินสองอย่างต่ำไป คือปริมาณข้อมูลที่ต้องไหลระหว่างเอนจินกับหน้าจอ และความจริงที่ว่า ngspice บน WASM ยังไม่มีใครทำสำเร็จระดับโปรดักชัน ตารางข้างล่างแจงให้ดู</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ MATRIX ════ -->
+<section class="sec">
+  <h2>ทำไมไม่ใช่อีกสามตัว</h2>
+  <p>เกณฑ์เรียงจากความเสี่ยงมากไปน้อย ไม่ใช่จากความชอบ สี่แถวบนคือข้อที่ทำให้โปรเจกต์นี้ตายได้จริง</p>
+  <div class="panel">
+    <div class="cap"><span>ตารางตัดสินใจ stack</span><span class="n">9 เกณฑ์</span></div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th style="min-width:200px">เกณฑ์</th>
+          <th class="win">C# + Avalonia</th>
+          <th>Tauri + React</th>
+          <th>C++ + Qt</th>
+          <th>Flutter Desktop</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="crit-col">เชื่อม ngspice<small>ความเสี่ยงอันดับ 1 ของทั้งโปรเจกต์</small></td>
+            <td class="win"><span class="m yes">ดีมาก</span><small>P/Invoke + sidecar ตรงไปตรงมา</small></td>
+            <td><span class="m mid">เสี่ยง</span><small>WASM ยังไม่พิสูจน์ · ถ้าใช้ sidecar ก็เสียข้อดีที่เลือกมา</small></td>
+            <td><span class="m yes">ดีมาก</span><small>ลิงก์ตรง แบบที่ KiCad ทำ</small></td>
+            <td><span class="m ok">ได้</span><small><code>dart:ffi</code> ได้ แต่ callback จาก C ยุ่ง</small></td></tr>
+
+          <tr><td class="crit-col">ขนบัฟเฟอร์ waveform<small>1 รัน = 10⁵–10⁷ จุด × หลายสิบโหนด</small></td>
+            <td class="win"><span class="m yes">ดีมาก</span><small>อยู่ในโปรเซสเดียว · <code>Span&lt;T&gt;</code> zero-copy</small></td>
+            <td><span class="m no">แย่</span><small>ต้อง serialize ข้าม IPC เข้า JS heap</small></td>
+            <td><span class="m yes">ดีมาก</span><small>พอยน์เตอร์เดียวกัน</small></td>
+            <td><span class="m ok">ได้</span><small>TypedData ผ่าน FFI พอไหว</small></td></tr>
+
+          <tr><td class="crit-col">หน้าต่างเครื่องมือวัดจริง<small>ลาก · ย่อขยาย · z-order · หลายจอ</small></td>
+            <td class="win"><span class="m yes">ดีมาก</span><small>native window ชั้นหนึ่ง</small></td>
+            <td><span class="m ok">ได้</span><small>1 WebView ต่อหน้าต่าง ≈ 40–80 MB ต่อบาน</small></td>
+            <td><span class="m yes">ดีมาก</span><small>—</small></td>
+            <td><span class="m mid">อ่อน</span><small>multi-window ยัง experimental</small></td></tr>
+
+          <tr><td class="crit-col">geometry kernel + autorouter<small>งานเลขหนัก ล้านรอบต่อการรัน</small></td>
+            <td class="win"><span class="m yes">ดีมาก</span><small><code>struct</code> · <code>ArrayPool</code> · SIMD ในภาษาเดียวกับ UI</small></td>
+            <td><span class="m yes">ดีมาก</span><small>Rust แรง — แต่เป็นภาษาที่สองที่ต้องเรียน</small></td>
+            <td><span class="m yes">ดีมาก</span><small>—</small></td>
+            <td><span class="m mid">อ่อน</span><small>Dart ไม่มี value type ทุกจุดคือ heap object</small></td></tr>
+
+          <tr><td>วาด canvas หมื่นชิ้น 60 fps</td>
+            <td class="win"><span class="m yes">ดีมาก</span><small>Skia ตรง</small></td>
+            <td><span class="m yes">ดีมาก</span><small>PixiJS / WebGL</small></td>
+            <td><span class="m yes">ดีมาก</span></td>
+            <td><span class="m yes">ดีมาก</span><small>CustomPainter / Impeller</small></td></tr>
+
+          <tr><td>ธีมโครม 7 แบบ พิกเซลเป๊ะ</td>
+            <td class="win"><span class="m yes">ดีมาก</span><small>token → DynamicResource สลับ dictionary ชุดเดียว</small></td>
+            <td><span class="m yes">ดีมาก</span><small>ต้นแบบเป็น CSS var อยู่แล้ว ยกมาได้เลย</small></td>
+            <td><span class="m ok">พอได้</span><small>QSS ทำ bevel 2 โทนได้ลำบาก</small></td>
+            <td><span class="m ok">ได้</span><small>ต้องเขียน widget เองทั้งชุด</small></td></tr>
+
+          <tr><td>ไทย 10–11px วรรณยุกต์ไม่ซ้อน</td>
+            <td class="win"><span class="m ok">ได้ · ต้อง QA</span><small>HarfBuzz — ต้องทดสอบจริงใน Phase 0</small></td>
+            <td><span class="m yes">ดีมาก</span><small>เอนจินเบราว์เซอร์</small></td>
+            <td><span class="m ok">ได้ · ต้อง QA</span></td>
+            <td><span class="m yes">ดีมาก</span></td></tr>
+
+          <tr><td>ทักษะ + toolchain ที่มีอยู่จริง</td>
+            <td class="win"><span class="m yes">พร้อม</span><small>.NET 10 ติดตั้งแล้ว · บ้านนี้มีของ WPF อยู่</small></td>
+            <td><span class="m no">ไม่มี</span><small>ไม่มี Rust ในเครื่อง · เรียนพร้อมกัน 3 เรื่อง</small></td>
+            <td><span class="m no">ไม่มี</span><small>ไม่มี cmake / C++ toolchain</small></td>
+            <td><span class="m ok">พอมี</span></td></tr>
+
+          <tr><td>license สำหรับขายเชิงพาณิชย์</td>
+            <td class="win"><span class="m yes">MIT</span></td>
+            <td><span class="m yes">MIT/Apache</span></td>
+            <td><span class="m mid">ต้องซื้อ/LGPL</span><small>Qt commercial หรือ dynamic-link LGPL</small></td>
+            <td><span class="m yes">BSD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="note"><b>อ่านตารางยังไง</b> — C++/Qt ชนะทางเทคนิคเกือบเท่า C# แต่แพ้ที่แถวล่างสองแถว: ไม่มี toolchain ในเครื่อง และ Qt ต้องจ่ายเงินถ้าจะปิดซอร์สขาย ส่วน Tauri แพ้ที่แถวสองกับแถวแปด ซึ่งเป็นสองแถวที่แก้ทีหลังไม่ได้ — ถ้ารู้ตอนเดือนที่ 8 ว่าขน waveform ไม่ไหว แปลว่าต้องรื้อ</p>
+</section>
+
+<!-- ════ ARCHITECTURE ════ -->
+<section class="sec">
+  <h2>สถาปัตยกรรม</h2>
+  <p>หนึ่ง solution เก้าโปรเจกต์ บวกโปรเซสภายนอกหนึ่งตัว กฎเดียวที่ห้ามผิดคือ <b>netlist เป็นแหล่งความจริงเดียว</b> — ผังวงจร บอร์ดทดลอง PCB และแท็บเนตลิสต์ ทั้งสี่โหมดอ่านเขียนก้อนเดียวกัน แก้ที่ไหนก็เห็นทุกที่ ตามที่สเปกกำหนดไว้</p>
+  <div class="panel">
+    <div class="cap"><span>โครงสร้าง solution</span><span class="n">9 + 1</span></div>
+    <div class="body">
+      <div class="arch">
+        <div class="tier"><div class="tname">UI</div><div class="mods">
+          <div class="mod"><code>SimBoard.App</code><em>เชลล์ 3 แผง · 7 ธีม · i18n · ไดอะล็อก · window manager</em></div>
+          <div class="mod hot"><code>SimBoard.Render</code><em>SkiaSharp scene graph · R-tree hit-test · pan/zoom · overlay ซิม</em></div>
+        </div></div>
+        <div class="wire"><span>↕ อ่าน document · ส่ง command</span></div>
+        <div class="tier"><div class="tname">Core</div><div class="mods">
+          <div class="mod hot"><code>SimBoard.Document</code><em>parts · nets · wires · footprints · sheets · undo/redo stack · .sbp I/O</em></div>
+          <div class="mod hot"><code>SimBoard.Netlist</code><em>ผัง → netlist · ERC · แหล่งความจริงร่วมของทั้ง 4 โหมด</em></div>
+          <div class="mod"><code>SimBoard.Parts</code><em>SQLite FTS5 · symbol · footprint · SPICE model</em></div>
+        </div></div>
+        <div class="wire"><span>↕ netlist เข้า · ผลลัพธ์ออก</span></div>
+        <div class="tier"><div class="tname">Engine</div><div class="mods">
+          <div class="mod hot"><code>SimBoard.Spice</code><em>โฮสต์ sidecar · เขียน .cir · อ่าน rawfile · result buffer ต่อโหนด</em></div>
+          <div class="mod"><code>SimBoard.Pcb</code><em>layer stack · DRC · Gerber/Excellon export · print 1:1</em></div>
+          <div class="mod"><code>SimBoard.Autoplace</code><em>cost model · simulated annealing · A* rip-up router</em></div>
+          <div class="mod"><code>SimBoard.Import</code><em>Gerber RS-274X · Excellon · KiCad · SPICE netlist · Eagle</em></div>
+        </div></div>
+        <div class="wire"><span>↕ stdio + rawfile · คนละโปรเซส</span></div>
+        <div class="tier"><div class="tname">External</div><div class="mods">
+          <div class="mod ext"><code>ngspice.exe</code><em>โปรเซสแยก — พังได้โดยไม่ลาก UI ลงไป และกันปัญหา license</em></div>
+        </div></div>
+      </div>
+      <p class="note">กล่องที่มีขีดส้มคือ hot path — ทุกอย่างที่แตะมันต้องมีเบนช์มาร์ก ไม่ใช่แค่ยูนิตเทสต์</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ TWO HARD TRUTHS ════ -->
+<section class="sec">
+  <h2>สองเรื่องที่ต้องพูดตรง ๆ ก่อนเริ่ม</h2>
+
+  <div class="panel">
+    <div class="cap"><span>ข้อ 1 · SPICE ไม่ใช่ของที่เขียนเอง</span></div>
+    <div class="body">
+      <p>เอนจิน SPICE ที่ใช้ได้จริงคือสามสิบปีของงานวิจัย ไม่ใช่โมดูลหนึ่งในแผน โมเดล MOSFET ตัวเดียว (BSIM4) เกินสองหมื่นบรรทัด C และส่วนที่ยากที่สุดไม่ใช่สมการ แต่คือ heuristic ตอนไม่ลู่เข้า — gmin stepping, source stepping, การเลือก timestep จาก local truncation error สร้างเองแล้ว "รันได้" ใน 3 เดือน แต่จะเจอวงจรที่ไม่ลู่เข้าไปตลอดอายุโปรดักต์ และช่างมืออาชีพจะเลิกใช้ทันทีที่เจอครั้งแรก</p>
+      <ul class="plain">
+        <li><b>ใช้ ngspice</b> — ทายาทตรงของ SPICE3f5 ที่สเปกระบุไว้บน title bar อยู่แล้ว มี API สำหรับฝังในโปรแกรม GUI โดยเฉพาะ (<code>ngSpice_Init</code> / <code>ngSpice_Circ</code> / <code>ngGet_Vec_Info</code>) และ KiCad ก็ใช้ตัวนี้</li>
+        <li><b>รันเป็นโปรเซสแยก ไม่ใช่ลิงก์เข้าไปในแอป</b> — ได้สามอย่างพร้อมกัน: วงจรที่ทำให้ solver ค้างไม่ทำให้งานที่ยังไม่เซฟหาย, กด Stop ได้จริงเพราะฆ่าโปรเซสได้, และเป็นกำแพง license ที่สะอาดถ้าจะขายแบบปิดซอร์ส</li>
+        <li><b>ค่าใช้จ่ายของกำแพงนี้ต่ำมาก</b> — หนึ่งรัน = ส่ง netlist เข้าไปครั้งเดียว รับ rawfile กลับมาก้อนเดียว ไม่ใช่การคุยกันทุกเฟรม ต่างจากการขนข้อมูลเข้า JS ซึ่งเกิดทุกครั้งที่รีเฟรชกราฟ</li>
+        <li><b>ต้องตรวจ license ก่อนขาย</b> — ngspice รวมโค้ดหลาย license เข้าด้วยกัน (แกน BSD จาก Berkeley + ส่วนที่ contribute มาทีหลัง) ให้ฝ่ายกฎหมายอ่านก่อนปิดกล่อง ส่วน <b>Xyce ที่สเปกเขียนคู่ไว้เป็น GPLv3</b> — ใช้ผ่านโปรเซสแยกเท่านั้น อย่าลิงก์เด็ดขาด</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="cap ai"><span>ข้อ 2 · "AI จัดวาง + เดินลาย" ไม่ใช่งานของ LLM</span></div>
+    <div class="body">
+      <p>ที่หน้าจอ 8 เขียนว่า AI — ของจริงคือ combinatorial optimization และนั่นเป็นข่าวดี เพราะมันทำให้ผลลัพธ์ทำซ้ำได้ อธิบายได้ และไม่ต้องต่อเน็ต ที่สำคัญคือ <b>ช่องติ๊กห้าช่องในม็อกอัพนั่นแหละคือ cost function</b> อยู่แล้ว:</p>
+      <ul class="plain">
+        <li><b>ลายสั้นที่สุด</b> → ผลรวมความยาว ratsnest แบบ half-perimeter</li>
+        <li><b>กระจายความร้อน</b> → penalty เมื่อชิ้นที่กินกำลังสูงอยู่ใกล้กัน + bonus เมื่อชิดขอบบอร์ด</li>
+        <li><b>เว้นระยะไฟแรงสูง 2.0 mm</b> → hard constraint ไม่ใช่ cost — ละเมิดแล้ว reject ทันที</li>
+        <li><b>จัดกลุ่มตามบล็อกวงจร</b> → penalty ตามระยะระหว่างชิ้นที่ติดป้ายบล็อกเดียวกัน</li>
+        <li><b>ลดจำนวนเวีย</b> → cost ต่อ via ในขั้นเดินลาย</li>
+      </ul>
+      <p>วางชิ้นด้วย simulated annealing (หรือ force-directed ตามด้วย local search) เดินลายด้วย A* บนกริดพร้อม rip-up-and-retry ถ้าอยากลัดทาง มี <code>freerouting</code> (Java, GPLv3) ให้เรียกเป็น sidecar ได้ — แต่ GPLv3 อีกเช่นกัน ต้องแยกโปรเซส</p>
+      <p class="note">ที่ LLM ช่วยได้จริงมีจุดเดียว คือ <b>อ่าน netlist แล้วเดาว่าอะไรเป็นบล็อกอะไร</b> ("กลุ่มนี้คือภาคจ่ายไฟ", "ตัวนี้คือ decoupling ของ U2") เพื่อป้อนข้อ 4 ให้อัตโนมัติ — เป็นฟีเจอร์เสริมชั้นบน ไม่ใช่ตัวจัดวาง และต้องทำงานได้แม้ปิดเน็ต</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ ROADMAP ════ -->
+<section class="sec">
+  <h2>แผนเก้าเฟส</h2>
+  <p>ตัวเลขสัปดาห์คือคนเขียนเต็มเวลาหนึ่งคน ทีมสามคนหารได้ประมาณ 2.2 (ไม่ใช่ 3 — เฟส 2 กับ 3 ขนานกันได้ไม่หมด) เส้นประคือ <b>จุดที่ขายได้แล้ว</b> ผังวงจร + ซิม + เครื่องมือวัด คือแกนเดียวกับที่ Multisim/Proteus ขายอยู่ ไม่ต้องรอ PCB เสร็จ</p>
+  <div class="panel">
+    <div class="cap"><span>ไทม์ไลน์ · หนึ่งคนเต็มเวลา</span><span class="n">73 สัปดาห์</span></div>
+    <div class="body">
+      <div class="scroll">
+        <div class="gantt">
+          <div class="grow"><div class="glabel"><b>0</b> สไปก์</div><div class="gtrack"><div class="gbar" style="grid-column:1/span 3"><span>3</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>1</b> เชลล์+เอกสาร</div><div class="gtrack"><div class="gbar" style="grid-column:4/span 6"><span>6</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>2</b> ผังวงจร</div><div class="gtrack"><div class="gbar" style="grid-column:10/span 10"><span>10</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>3</b> ซิม+เครื่องมือ</div><div class="gtrack"><div class="gbar mvp" style="grid-column:20/span 10"><span>10 · ขายได้</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>4</b> บอร์ดทดลอง</div><div class="gtrack"><div class="gbar" style="grid-column:30/span 6"><span>6</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>5</b> PCB</div><div class="gtrack"><div class="gbar" style="grid-column:36/span 14"><span>14</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>6</b> จัดวาง+เดินลาย</div><div class="gtrack"><div class="gbar" style="grid-column:50/span 10"><span>10</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>7</b> นำเข้าไฟล์</div><div class="gtrack"><div class="gbar" style="grid-column:60/span 6"><span>6</span></div></div></div>
+          <div class="grow"><div class="glabel"><b>8</b> เก็บงาน+ปล่อย</div><div class="gtrack"><div class="gbar" style="grid-column:66/span 8"><span>8</span></div></div></div>
+          <div class="gaxis"><div></div><div class="gticks">
+            <i style="grid-column:1">เดือน 0</i>
+            <i style="grid-column:14">3</i>
+            <i class="mvpline" style="grid-column:30"></i>
+            <i style="grid-column:27">6</i>
+            <i style="grid-column:40">9</i>
+            <i style="grid-column:53">12</i>
+            <i style="grid-column:66">15</i>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="cap"><span>รายละเอียดแต่ละเฟส</span></div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th class="n">#</th><th style="min-width:150px">เฟส</th><th style="min-width:260px">ส่งมอบอะไร</th><th>จอ</th><th class="n">สัปดาห์</th></tr></thead>
+        <tbody>
+          <tr><td class="n crit-col">0</td><td><b>สไปก์ลดความเสี่ยง</b></td>
+            <td>พิสูจน์สามข้อที่ถ้าพลาดแล้วต้องเปลี่ยน stack — ก่อนลงทุนหกเดือน (รายละเอียดท้ายเอกสาร)</td><td>—</td><td class="n">3</td></tr>
+          <tr><td class="n">1</td><td><b>เชลล์ + โมเดลเอกสาร</b></td>
+            <td>เชลล์สามแผง · 7 ธีมครบผ่าน token dictionary · i18n (ยก <code>D</code> จากต้นแบบมาทั้งชุด มี 56 คู่แล้ว) · ไฟล์ <code>.sbp</code> · undo/redo command stack · ไดอะล็อกตั้งค่า</td><td class="n">1 · 10 · 11</td><td class="n">6</td></tr>
+          <tr><td class="n">2</td><td><b>ผังวงจร</b></td>
+            <td>วาง/ลาก/หมุน · เดินสายมุมฉาก + junction อัตโนมัติ · สแนป 2.54 mm · เลือก+แผงคุณสมบัติ · ตัวจัดการเลเยอร์ · คลังอุปกรณ์ virtualized · ERC · สกัด netlist</td><td class="n">2 · 3 · 9</td><td class="n">10</td></tr>
+          <tr><td class="n">3</td><td><b>ซิมูเลชัน + เครื่องมือวัด</b></td>
+            <td>ngspice sidecar · transport เล่น/พัก/หยุด/ทีละสเต็ป · overlay กระแสไหล+ป้ายแรงดัน · สโคปติดล่างจอ · สโคป 4 ช่อง + มัลติมิเตอร์ + logic analyzer เป็นหน้าต่างลอย</td><td class="n">5 · 6</td><td class="n">10</td></tr>
+          <tr><td class="n">4</td><td><b>บอร์ดทดลอง 2D</b></td>
+            <td>บอร์ด 830 จุด · โมเดล tie-point ↔ net · วางชิ้นเป็นวัตถุจริง + แถบสีตัวต้านทาน · สายจัมป์ · แหล่งจ่าย + ฟังก์ชันเจน · ตารางค่าที่วัดได้</td><td class="n">4</td><td class="n">6</td></tr>
+          <tr><td class="n">5</td><td><b>PCB</b></td>
+            <td>footprint + layer stack · เดินลายมือ · via · ratsnest · DRC ครบ 7 ข้อ · ส่งออก Gerber RS-274X + Excellon · พิมพ์ 1:1</td><td class="n">8 (ไม่รวม AI)</td><td class="n">14</td></tr>
+          <tr><td class="n">6</td><td><b>จัดวาง + เดินลายอัตโนมัติ</b></td>
+            <td>cost model จากช่องติ๊ก · simulated annealing · A* rip-up router · ปักหมุดชิ้นก่อนรัน · ล็อกสตรีมสด · ยกเลิกกลางคันได้ · undo ทั้งชุดเป็นก้อนเดียว</td><td class="n">8 (แผง AI)</td><td class="n">10</td></tr>
+          <tr><td class="n">7</td><td><b>นำเข้าไฟล์</b></td>
+            <td>Gerber · Excellon · KiCad · SPICE netlist · จับคู่ footprint อัตโนมัติ · สร้างผังย้อนกลับจาก netlist · Eagle <code>.brd</code> ถ้าเวลาพอ</td><td class="n">7</td><td class="n">6</td></tr>
+          <tr><td class="n">8</td><td><b>เก็บงาน + ปล่อย</b></td>
+            <td>ธีมคอนทราสต์สูง · คีย์บอร์ดครบทุกคอนโทรล · QA ไทยทุกป้าย · เบนช์มาร์กบอร์ด 500 ชิ้น · installer + auto-update · ระบบ crash report</td><td>ทั้งหมด</td><td class="n">8</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════ RISKS ════ -->
+<section class="sec">
+  <h2>ความเสี่ยงที่รู้แล้ว</h2>
+  <p>เรียงตามผลกระทบถ้าเกิดจริง สามข้อบนคือข้อที่ทำให้ต้องรื้อ ไม่ใช่แค่ช้า</p>
+  <div class="risks">
+    <div class="risk s1"><div class="sev">บล็อกเกอร์</div><div class="rb">
+      <b>ngspice ไม่ลู่เข้ากับวงจรที่ผู้ใช้เขียน</b>
+      <p>ไม่ใช่บั๊กของเรา แต่ผู้ใช้โทษเรา วงจรที่มีสวิตชิ่ง ฟีดแบ็ก หรือโมเดลไม่ดี จะไม่ลู่เข้าอย่างสม่ำเสมอ</p>
+      <div class="fix">ตรวจจับให้ได้แล้วบอกเป็นภาษาคน ไม่ใช่โยน <code>Timestep too small</code> ออกหน้าจอ — ทำหน้า "ทำไมซิมไม่ผ่าน" ที่ชี้ไปที่โหนดที่มีปัญหา พร้อมปุ่มลองใหม่ด้วย gmin stepping ให้อัตโนมัติ วางแผนไว้ตั้งแต่ Phase 3 อย่าคิดว่าเป็นงาน polish</div>
+    </div></div>
+
+    <div class="risk s1"><div class="sev">บล็อกเกอร์</div><div class="rb">
+      <b>คลังอุปกรณ์ 8,000+ ชิ้นคืองานเนื้อหา ไม่ใช่งานโค้ด</b>
+      <p>ม็อกอัพนับไว้ 1,284 passives · 2,465 IC · 1,130 ทรานซิสเตอร์ แต่ละชิ้นต้องมีสัญลักษณ์ + footprint + โมเดล SPICE + ดาต้าชีต ยังไม่นับไอคอนจริงที่ยังเป็นตัวอักษรแทนอยู่</p>
+      <div class="fix">ฐานคือคลังของ KiCad (CC-BY-SA 4.0 พร้อมข้อยกเว้นให้ใช้ในงานออกแบบได้) — ครอบคลุมสัญลักษณ์กับ footprint เกือบหมด ส่วนโมเดล SPICE ของผู้ผลิตแต่ละเจ้ามี license แยก ต้องไล่ทีละราย <b>เริ่มงานนี้ขนานไปตั้งแต่ Phase 1</b> ไม่ใช่รอถึง Phase 8</div>
+    </div></div>
+
+    <div class="risk s1"><div class="sev">บล็อกเกอร์</div><div class="rb">
+      <b>ขอบเขตงานใหญ่กว่าที่หน้าจอสิบจอทำให้รู้สึก</b>
+      <p>KiCad ที่ทำงานประเภทเดียวกันคือโค้ดกว่าล้านบรรทัดกับเวลายี่สิบปี v1 ของ SimBoard น่าจะราว 80,000–150,000 บรรทัด</p>
+      <div class="fix">อย่าสร้างสิบจอพร้อมกัน — ปล่อยที่เส้นประ (เฟส 0–3) เป็นโปรดักต์ที่ขายได้ก่อน แล้วให้เงินกับฟีดแบ็กจากผู้ใช้จริงเป็นตัวจ่ายค่าเฟส 4–8 บอร์ดทดลองกับ PCB เป็น v2 ได้โดยไม่เสียหาย</div>
+    </div></div>
+
+    <div class="risk s2"><div class="sev">สูง</div><div class="rb">
+      <b>ไทยที่ 10–11px กับ Tahoma</b>
+      <p>สเปกเตือนไว้เอง: ไทยยาวกว่าอังกฤษ 15–40% แต่แผงกว้างคงที่ — ป้ายคุณสมบัติกว้าง 76px คือจุดที่จะแตกก่อน และวรรณยุกต์ซ้อนสระอาจเบียดกันที่ขนาดนี้</p>
+      <div class="fix">ทดสอบตั้งแต่สไปก์ ไม่ใช่ตอน QA · ใช้ Noto Sans Thai / Leelawadee UI สำหรับ run ภาษาไทย เก็บ Tahoma ไว้ให้ละติน · เขียนเทสต์ที่จับ text overflow อัตโนมัติทุกป้ายในทั้งสองภาษา</div>
+    </div></div>
+
+    <div class="risk s2"><div class="sev">สูง</div><div class="rb">
+      <b>สเปก AI จัดวางยังไม่ครบ</b>
+      <p>handoff เองก็ระบุไว้ว่ายังไม่ได้กำหนด: ข้อไหนเป็น hard constraint ข้อไหนเป็น cost, ยกเลิกกลางคันได้ไหม, ปักหมุดชิ้นก่อนรันได้ไหม, ผลลัพธ์ undo ยังไง</p>
+      <div class="fix">เขียนสเปกให้จบ<em>ก่อน</em>เข้าเฟส 6 คำตอบที่แนะนำ: ระยะไฟแรงสูงเป็น hard constraint ที่เหลือเป็น cost · ยกเลิกได้ทุกเมื่อและกลับไปสถานะก่อนรัน · ปักหมุดได้ · ทั้งการรันนับเป็น undo หนึ่งก้าว</div>
+    </div></div>
+
+    <div class="risk s2"><div class="sev">สูง</div><div class="rb">
+      <b>Altium <code>.PcbDoc</code> กับ "แปลงรูปเป็นลายวงจร"</b>
+      <p>สองรายการนี้อยู่ในกล่อง "รูปแบบที่รองรับ" ของหน้าจอ 7 — Altium เป็นไบนารี OLE ที่ไม่มีเอกสาร มีแต่ที่แกะกันเอง ส่วนแปลงรูปเป็นลายคืองาน computer vision เต็มตัว</p>
+      <div class="fix">ตัดออกจาก v1 ทั้งคู่ และแก้ข้อความในกล่องนั้นให้ตรงกับของที่ทำจริง — สัญญาในไดอะล็อกที่โปรแกรมทำไม่ได้ แพงกว่าฟีเจอร์ที่ไม่มี</div>
+    </div></div>
+
+    <div class="risk s3"><div class="sev">กลาง</div><div class="rb">
+      <b>คอนทราสต์ต่ำจากความเรโทร</b>
+      <p>สเปกยอมรับเองว่าบางคู่สีไม่ผ่านเกณฑ์ (<code>#4a6a80</code> บน <code>#e4ebf1</code>, <code>#6f8ba1</code> บน <code>#0d1418</code>) ทั้งที่เป็นเครื่องมือที่ช่างจ้องทั้งวัน</p>
+      <div class="fix">ธีมที่แปดชื่อ "คอนทราสต์สูง" อยู่ในตารางเลือกธีมตั้งแต่แรก ไม่ใช่ซ่อนใน accessibility settings — และเพราะทุกอย่างมาจาก token ชุดเดียว ธีมนี้แทบไม่มีต้นทุนเพิ่ม</div>
+    </div></div>
+
+    <div class="risk s3"><div class="sev">กลาง</div><div class="rb">
+      <b>ธีมเรโทรจะค่อย ๆ เพี้ยนโดยไม่มีใครรู้</b>
+      <p>bevel หนึ่งพิกเซลเจ็ดชุด ไม่มีใครตรวจด้วยตาทุกครั้งที่แก้โค้ด ผ่านไปสามเดือนจะไม่เหมือนม็อกอัพแล้ว</p>
+      <div class="fix">golden-image test — เรนเดอร์คอนโทรลทุกตัวทุกธีมลงบิตแมป เทียบกับภาพอ้างอิงใน CI ต่างเกินธรณีเมื่อไรให้ build แดง ตั้งไว้ตั้งแต่ Phase 1 ตอนที่ยังมีคอนโทรลไม่กี่ตัว</div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ════ SPIKES ════ -->
+<section class="sec">
+  <h2>เฟส 0 · เริ่มพรุ่งนี้ได้เลย</h2>
+  <p>สามสไปก์ สามสัปดาห์ แต่ละอันมีเกณฑ์ผ่านที่วัดได้ ไม่ใช่ "ลองดูก่อน" ถ้าอันไหนไม่ผ่าน แปลว่า stack ผิด — และรู้ตอนสัปดาห์ที่ 3 ถูกกว่ารู้ตอนเดือนที่ 8 มาก</p>
+  <ol class="steps">
+    <li><div class="sn">S1</div><div class="sb">
+      <b>ngspice sidecar จาก C#</b>
+      <p>รัน <code>ngspice.exe</code> เป็นโปรเซสลูก ป้อนเนตลิสต์ 555 astable ตัวเดียวกับในม็อกอัพ อ่าน rawfile กลับมา แล้ววาดรูปคลื่นที่ตรงกับ CH1/CH2 ในหน้าจอ 5</p>
+      <div class="pass">ผ่านเมื่อ · รัน transient 0–20 ms กลับมาใน &lt; 2 วินาที · กด Stop กลางคันแล้วโปรเซสตายจริงไม่มีซาก · ค่า Vpp/ความถี่ตรงกับ 4.98 V / 1.442 kHz ที่สเปกระบุ</div>
+    </div></li>
+    <li><div class="sn">S2</div><div class="sb">
+      <b>Skia canvas ที่หนักจริง</b>
+      <p>วาดวัตถุ 10,000 ชิ้น (สัญลักษณ์ + สาย + ป้าย) บน Avalonia custom draw op พร้อม pan/zoom และ hit-test ด้วย R-tree</p>
+      <div class="pass">ผ่านเมื่อ · แพนต่อเนื่องคงที่ 60 fps ที่ 10,000 ชิ้น · hit-test ตอบใน &lt; 1 ms · หน่วยความจำนิ่งหลังแพนสองนาที ไม่ไต่ขึ้น</div>
+    </div></li>
+    <li><div class="sn">S3</div><div class="sb">
+      <b>โครม Windows ME ของจริง + ไทย 10px</b>
+      <p>ทำ TitleBar · Button · ช่องจม · ListView เป็น ControlTemplate จริง ขับด้วย token dictionary แล้วเทียบกับ <code>01-start-project-picker.png</code> ทีละพิกเซล พร้อมใส่ป้ายไทยที่ยาวที่สุดในสเปกลงไปทุกช่อง</p>
+      <div class="pass">ผ่านเมื่อ · สลับ ME ↔ XP Luna ด้วยการเปลี่ยน dictionary ชุดเดียว ไม่แตะโค้ดคอนโทรล · ภาพต่างจากม็อกอัพน้อยกว่า 2% · ป้ายไทยที่ยาวที่สุดไม่ล้นช่อง 76px · วรรณยุกต์ไม่ซ้อนสระที่ 10px</div>
+    </div></li>
+  </ol>
+</section>
+
+<!-- ════ OPEN QUESTIONS ════ -->
+<section class="sec">
+  <h2>หกข้อที่ต้องตัดสินใจ</h2>
+  <p>แผนข้างบนเดินได้โดยไม่ต้องรอคำตอบ แต่หกข้อนี้เปลี่ยนรายละเอียด ตอบก่อนเริ่ม Phase 1 ได้ยิ่งดี</p>
+  <div class="panel">
+    <div class="cap"><span>รอคำตอบ</span><span class="n">6</span></div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th class="n">#</th><th style="min-width:220px">คำถาม</th><th>กระทบอะไร</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td><b>ขายแบบปิดซอร์สไหม</b><small>ม็อกอัพเขียน "ลิขสิทธิ์ใช้งานเชิงพาณิชย์ · 1 เครื่อง" ไว้แล้ว</small></td><td>ตัดสินขอบเขตการตรวจ license ของ ngspice และปิดประตู Xyce/freerouting แบบลิงก์ตรงถาวร</td></tr>
+          <tr><td class="n">2</td><td><b>Windows อย่างเดียว หรือ macOS/Linux ด้วย</b></td><td>Windows ล้วน → WPF ก็พอและเสี่ยงน้อยกว่าเพราะมีของเดิมในบ้าน · ข้ามแพลตฟอร์ม → Avalonia (และธีม macOS Sonoma/Aqua ในสเปกจะได้มีที่ไป)</td></tr>
+          <tr><td class="n">3</td><td><b>คลังอุปกรณ์เอามาจากไหน</b></td><td>ฐาน KiCad ฟรีแต่ผูก CC-BY-SA · ซื้อชุดสำเร็จเร็วกว่าแต่มีค่าใช้จ่ายต่อเนื่อง · จ้างวาดเองคุมได้หมดแต่กินเวลาหลายเดือน</td></tr>
+          <tr><td class="n">4</td><td><b>ทีมกี่คน</b></td><td>73 สัปดาห์ข้างบนคือคนเดียว · สามคนเหลือราว 33 สัปดาห์ แต่ต้องแบ่งตามชั้น (UI / เอนจิน / คลังอุปกรณ์) ไม่ใช่ตามหน้าจอ</td></tr>
+          <tr><td class="n">5</td><td><b>Altium <code>.PcbDoc</code> จำเป็นแค่ไหน</b></td><td>ถ้าไม่ใช่ข้อบังคับ ตัดออกได้เลย ประหยัดหลายสัปดาห์และความเสี่ยงที่แกะฟอร์แมตไม่จบ</td></tr>
+          <tr><td class="n">6</td><td><b>ผู้ใช้กลุ่มแรกคือใคร</b><small>ช่างซ่อม · R&amp;D · อาจารย์ · ปวช./ปวส.</small></td><td>เลือกกลุ่มเดียวก่อน แล้วลำดับเฟสจะเปลี่ยน — ช่างซ่อมต้องการนำเข้าไฟล์ (เฟส 7) เร็วกว่าที่วางไว้ · อาจารย์ต้องการบอร์ดทดลอง (เฟส 4) ก่อน PCB</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer class="statusbar" style="margin-top:8px">
+  <span>เอกสารนี้เป็นแผน ยังไม่มีโค้ด</span>
+  <span>ขั้นถัดไป <b>S1 · ngspice sidecar</b></span>
+  <span>ที่ทำงาน <b>D:\Code\Simboard</b></span>
+</footer>
+
+</div>

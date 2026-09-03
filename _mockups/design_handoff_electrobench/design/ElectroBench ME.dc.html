@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><style>
+body{margin:0;background:#3a3d42;-webkit-font-smoothing:antialiased;
+--face:#d6d3ce;--face2:#c9c5bf;--press:#cbc7c1;--lite:#ffffff;--shad:#808080;--dark:#404040;
+--raiseBc:#ffffff #404040 #404040 #ffffff;--sunkBc:#808080 #ffffff #ffffff #808080;--tabBc:#e6e3de #808080 #808080 #e6e3de;
+--raiseSh:inset -1px -1px 0 #808080,inset 1px 1px 0 #f2efe9;--raiseSh1:inset -1px -1px 0 #808080;--sunkSh:inset 1px 1px 0 #404040;
+--tb:linear-gradient(90deg,#0a246a 0%,#2f5f9e 62%,#8fb7e0 100%);--tb2:linear-gradient(90deg,#0a246a,#4f7cb0);
+--cap:linear-gradient(90deg,#5b7fa8,#96b3d0);--sel:#0a246a;--rad:0px;--tbrad:0px;
+--frame:#d6d3ce;--frameBc:#ffffff #404040 #404040 #ffffff;
+--tbFg:#ffffff;--capFg:#ffffff;--ctlRad:0px;--ctlFg:#000000;--minBg:#d6d3ce;--minBc:#ffffff #404040 #404040 #ffffff;--maxBg:#d6d3ce;--maxBc:#ffffff #404040 #404040 #ffffff;--closeBg:#d6d3ce;--closeFg:#000000;--closeBc:#ffffff #404040 #404040 #ffffff;
+--desk:radial-gradient(120% 100% at 30% 0%,#4d7f97 0%,#245a72 45%,#123a4c 100%)}
+a{color:#0a3d91}a:hover{color:#2a78d6}
+@keyframes flow{to{stroke-dashoffset:-24}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes bar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+</style></helmet>
+<div ref="{{ rootRef }}" style="width:1480px;font-family:Tahoma,'Leelawadee UI','Noto Sans Thai',Verdana,sans-serif;font-size:11px;color:#000;padding:0 0 40px">
+
+<div style="display:flex;align-items:center;gap:5px;height:44px;padding:0 14px;background:#1b1d21;color:#b9bec6;font:10px/1 ui-monospace,'Lucida Console',monospace;letter-spacing:.04em;position:sticky;top:0;z-index:60">
+<span style="color:#6d737c;margin-right:6px">UI MOCKUP · ELECTROBENCH ME</span>
+<sc-for list="{{ screens }}" as="sc" hint-placeholder-count="10">
+<sc-if value="{{ sc.on }}"><button onClick="{{ sc.go }}" style="font:10px/1 ui-monospace,monospace;padding:6px 9px;border:1px solid #e8b04a;background:#e8b04a;color:#1b1d21;cursor:default">{{ sc.n }} {{ sc.label }}</button></sc-if>
+<sc-if value="{{ sc.off }}"><button onClick="{{ sc.go }}" style="font:10px/1 ui-monospace,monospace;padding:6px 9px;border:1px solid #3a3e45;background:#23262b;color:#9aa1ab;cursor:default">{{ sc.n }} {{ sc.label }}</button></sc-if>
+</sc-for>
+<div style="margin-left:auto;display:flex;gap:0;margin-right:10px">
+<sc-for list="{{ themeBtns }}" as="th" hint-placeholder-count="4">
+<sc-if value="{{ th.on }}"><button onClick="{{ th.go }}" style="font:10px/1 ui-monospace,monospace;padding:6px 9px;border:1px solid #7fb4e8;background:#2f6fc4;color:#fff;cursor:default">{{ th.label }}</button></sc-if>
+<sc-if value="{{ th.off }}"><button onClick="{{ th.go }}" style="font:10px/1 ui-monospace,monospace;padding:6px 9px;border:1px solid #3a3e45;background:#23262b;color:#9aa1ab;cursor:default">{{ th.label }}</button></sc-if>
+</sc-for>
+</div>
+<div style="display:flex;gap:0">
+<sc-if value="{{ isTH }}"><button onClick="{{ setTH }}" style="font:10px/1 ui-monospace,monospace;padding:6px 11px;border:1px solid #e8b04a;background:#e8b04a;color:#1b1d21;cursor:default">ไทย</button><button onClick="{{ setEN }}" style="font:10px/1 ui-monospace,monospace;padding:6px 11px;border:1px solid #3a3e45;background:#23262b;color:#9aa1ab;cursor:default">EN</button></sc-if>
+<sc-if value="{{ isEN }}"><button onClick="{{ setTH }}" style="font:10px/1 ui-monospace,monospace;padding:6px 11px;border:1px solid #3a3e45;background:#23262b;color:#9aa1ab;cursor:default">ไทย</button><button onClick="{{ setEN }}" style="font:10px/1 ui-monospace,monospace;padding:6px 11px;border:1px solid #e8b04a;background:#e8b04a;color:#1b1d21;cursor:default">EN</button></sc-if>
+</div>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<g id="resV" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="-6.5" y="8" width="13" height="34"></rect><line x1="0" y1="0" x2="0" y2="8"></line><line x1="0" y1="42" x2="0" y2="50"></line></g>
+<g id="resH" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="-6.5" width="34" height="13"></rect><line x1="0" y1="0" x2="8" y2="0"></line><line x1="42" y1="0" x2="50" y2="0"></line></g>
+<g id="capV" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="0" y1="0" x2="0" y2="9"></line><line x1="-10" y1="9" x2="10" y2="9"></line><line x1="-10" y1="15" x2="10" y2="15"></line><line x1="0" y1="15" x2="0" y2="24"></line></g>
+<g id="ecapV" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="0" y1="0" x2="0" y2="9"></line><line x1="-10" y1="9" x2="10" y2="9"></line><path d="M-10 17 Q0 11 10 17"></path><line x1="0" y1="15" x2="0" y2="24"></line></g>
+<g id="diodeV" stroke="currentColor" stroke-width="1.6" fill="none"><line x1="0" y1="0" x2="0" y2="6"></line><polygon points="-8,6 8,6 0,20" fill="currentColor" stroke="none"></polygon><line x1="-9" y1="20" x2="9" y2="20"></line><line x1="0" y1="20" x2="0" y2="26"></line></g>
+<g id="ledV" stroke="currentColor" stroke-width="1.6" fill="none"><line x1="0" y1="0" x2="0" y2="6"></line><polygon points="-8,6 8,6 0,20" fill="currentColor" stroke="none"></polygon><line x1="-9" y1="20" x2="9" y2="20"></line><line x1="0" y1="20" x2="0" y2="26"></line><line x1="10" y1="4" x2="16" y2="-2"></line><line x1="12" y1="11" x2="18" y2="5"></line></g>
+<g id="gnd" stroke="currentColor" stroke-width="1.6" fill="none"><line x1="0" y1="0" x2="0" y2="7"></line><line x1="-11" y1="7" x2="11" y2="7"></line><line x1="-7" y1="11" x2="7" y2="11"></line><line x1="-3" y1="15" x2="3" y2="15"></line></g>
+<pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="0" cy="0" r="1" fill="#2b3440"></circle></pattern>
+<pattern id="tie" width="19" height="19" patternUnits="userSpaceOnUse"><rect x="6.5" y="6.5" width="5" height="5" rx="1" fill="#2f3134"></rect><rect x="7" y="7" width="4" height="4" rx="1" fill="#8d8f92"></rect></pattern>
+<pattern id="pads" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="4" fill="#c69a5c"></circle><circle cx="12" cy="12" r="1.6" fill="#101215"></circle></pattern>
+<pattern id="scopegrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0V40M0 40H40" fill="none" stroke="#1d4a3c" stroke-width="1"></path><path d="M8 20h2M18 20h2M28 20h2M20 8v2M20 18v2M20 28v2" stroke="#1d4a3c" stroke-width="1"></path></pattern>
+</defs></svg>
+
+<sc-if value="{{ isStart }}">
+<div style="width:1480px;height:920px;background:var(--desk);display:flex;align-items:center;justify-content:center;position:relative">
+<div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)"></div>
+<div style="position:relative;width:1060px;background:var(--frame);border:1px solid;border-color:var(--frameBc);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden;box-shadow:var(--raiseSh),6px 6px 14px rgba(0,0,0,.35)">
+<div style="display:flex;align-items:center;height:22px;padding:0 3px 0 4px;background:var(--tb);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font-weight:700;font-size:11px">
+<div style="width:14px;height:14px;margin-right:5px;background:var(--face);border:1px solid var(--dark);display:grid;place-items:center"><div style="width:6px;height:6px;border:1.5px solid var(--sel);border-radius:50%"></div></div>
+<span>ElectroBench ME — {{ t.sTitle }}</span>
+<div style="margin-left:auto;display:flex;gap:2px">
+<div style="width:16px;height:14px;background:var(--minBg);border:1px solid;border-color:var(--minBc);border-radius:var(--ctlRad);color:var(--ctlFg);display:grid;place-items:end center;font:9px/1 Tahoma;padding-bottom:2px">_</div>
+<div style="width:16px;height:14px;background:var(--maxBg);border:1px solid;border-color:var(--maxBc);border-radius:var(--ctlRad);display:grid;place-items:center"><div style="width:7px;height:6px;border:1px solid var(--ctlFg);border-top-width:2px"></div></div>
+<div style="width:16px;height:14px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:10px/1 Tahoma">✕</div>
+</div>
+</div>
+<div style="display:flex">
+<div style="width:250px;padding:20px 16px;background:linear-gradient(160deg,#1d3b52,#0e1f2c);color:#cfe0ea;display:flex;flex-direction:column;gap:10px">
+<div style="font:700 22px/1.15 Tahoma;color:#fff;letter-spacing:-.01em">ElectroBench<span style="color:#e8b04a"> ME</span></div>
+<div style="font-size:11px;line-height:1.55;color:#9fbccd">{{ t.sSub }}</div>
+<div style="margin-top:auto;font:9px/1.5 ui-monospace,monospace;color:#6f93a8">v4.2.1 · build 20260903<br>Simulation core: SPICE3f5 / Xyce<br>{{ t.sVer }}</div>
+</div>
+<div style="flex:1;padding:16px 18px 18px">
+<div style="display:flex;gap:16px">
+<div style="flex:1.15">
+<div style="font-weight:700;margin-bottom:5px">{{ t.sRecent }}</div>
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:262px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1fr 92px 78px;background:var(--face);border-bottom:1px solid var(--shad);font-size:10px">
+<div style="padding:3px 6px;border-right:1px solid var(--shad)">{{ t.sColName }}</div><div style="padding:3px 6px;border-right:1px solid var(--shad)">{{ t.sColKind }}</div><div style="padding:3px 6px">{{ t.sColDate }}</div>
+</div>
+<sc-for list="{{ recents }}" as="r" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:1fr 92px 78px;font-size:11px;border-bottom:1px solid #efedea">
+<div style="padding:4px 6px;display:flex;gap:6px;align-items:center;overflow:hidden;white-space:nowrap"><span style="width:13px;height:13px;flex:none;background:#e8b04a;border:1px solid #8a6420"></span>{{ r.name }}</div>
+<div style="padding:4px 6px;color:#3c3c3c">{{ r.kind }}</div><div style="padding:4px 6px;color:#6a6a6a;font-size:10px">{{ r.date }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="width:250px">
+<div style="font-weight:700;margin-bottom:5px">{{ t.sTemplates }}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+<sc-for list="{{ templates }}" as="tp" hint-placeholder-count="6">
+<div style="background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);padding:6px">
+<div style="height:44px;background:#12161b;display:grid;place-items:center;color:#7f97ab;font:9px/1 ui-monospace,monospace;border:1px solid var(--dark)">{{ tp.tag }}</div>
+<div style="font-size:10px;margin-top:4px;line-height:1.3;height:26px">{{ tp.label }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:7px;margin-top:16px;padding-top:13px;border-top:1px solid var(--shad);box-shadow:0 -1px 0 #ffffff inset">
+<label style="display:flex;align-items:center;gap:5px;font-size:11px"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:9px/1 Tahoma">✓</span>{{ t.sShowStart }}</label>
+<div style="margin-left:auto;display:flex;gap:6px">
+<button style="min-width:96px;padding:5px 12px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">{{ t.bNew }}</button>
+<button style="min-width:96px;padding:5px 12px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bOpen }}</button>
+<button style="min-width:96px;padding:5px 12px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bImport }}</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isShell }}" hint-placeholder-val="{{ true }}">
+<div style="width:1480px;height:920px;background:var(--frame);border:1px solid;border-color:var(--frameBc);border-radius:var(--tbrad) var(--tbrad) 0 0;box-shadow:var(--raiseSh);display:flex;flex-direction:column;position:relative;overflow:hidden">
+
+<div style="display:flex;align-items:center;height:22px;padding:0 3px 0 4px;background:var(--tb);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font-weight:700;font-size:11px;flex:none">
+<div style="width:14px;height:14px;margin-right:5px;background:var(--face);border:1px solid var(--dark);display:grid;place-items:center"><div style="width:6px;height:6px;border:1.5px solid var(--sel);border-radius:50%"></div></div>
+<span>{{ t.winTitle }} — ElectroBench ME</span>
+<div style="margin-left:auto;display:flex;gap:2px">
+<div style="width:16px;height:14px;background:var(--minBg);border:1px solid;border-color:var(--minBc);border-radius:var(--ctlRad);color:var(--ctlFg);display:grid;place-items:end center;font:9px/1 Tahoma;padding-bottom:2px">_</div>
+<div style="width:16px;height:14px;background:var(--maxBg);border:1px solid;border-color:var(--maxBc);border-radius:var(--ctlRad);display:grid;place-items:center"><div style="width:7px;height:6px;border:1px solid var(--ctlFg);border-top-width:2px"></div></div>
+<div style="width:16px;height:14px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:10px/1 Tahoma">✕</div>
+</div>
+</div>
+
+<div style="display:flex;gap:0;height:20px;padding:0 2px;align-items:stretch;border-bottom:1px solid var(--shad);flex:none">
+<sc-for list="{{ menus }}" as="m" hint-placeholder-count="9">
+<div style="padding:0 9px;display:grid;place-items:center;font-size:11px">{{ m }}</div>
+</sc-for>
+</div>
+
+<div style="display:flex;align-items:center;gap:2px;height:30px;padding:2px 4px;border-bottom:1px solid var(--shad);box-shadow:0 1px 0 var(--lite);flex:none">
+<div style="display:flex;gap:1px;padding-right:5px;margin-right:3px;border-right:1px solid var(--shad);box-shadow:1px 0 0 var(--lite)">
+<div style="width:23px;height:22px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center"><div style="width:11px;height:13px;background:#fff;border:1px solid #55585c"></div></div>
+<div style="width:23px;height:22px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center"><div style="width:12px;height:10px;background:#e8b04a;border:1px solid #7d5a19"></div></div>
+<div style="width:23px;height:22px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center"><div style="width:11px;height:11px;background:#8fa8bd;border:1px solid #4a5c6b"></div></div>
+</div>
+<div style="display:flex;gap:1px;padding-right:5px;margin-right:3px;border-right:1px solid var(--shad);box-shadow:1px 0 0 var(--lite)">
+<sc-for list="{{ tools }}" as="tl" hint-placeholder-count="9">
+<sc-if value="{{ tl.on }}"><div style="width:23px;height:22px;background:var(--press);border:1px solid;border-color:var(--sunkBc);display:grid;place-items:center;font:11px/1 Tahoma;color:#000">{{ tl.g }}</div></sc-if>
+<sc-if value="{{ tl.off }}"><div style="width:23px;height:22px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font:11px/1 Tahoma;color:#1c1c1c">{{ tl.g }}</div></sc-if>
+</sc-for>
+</div>
+<div style="display:flex;gap:1px;padding-right:6px;margin-right:4px;border-right:1px solid var(--shad);box-shadow:1px 0 0 var(--lite)">
+<sc-if value="{{ running }}">
+<div style="height:22px;padding:0 8px;background:var(--press);border:1px solid;border-color:var(--sunkBc);display:flex;align-items:center;gap:5px;font:700 11px Tahoma"><span style="width:0;height:0;border-left:8px solid #1c7a3e;border-top:5px solid transparent;border-bottom:5px solid transparent"></span>{{ t.bRun }}</div>
+</sc-if>
+<sc-if value="{{ notRunning }}">
+<div style="height:22px;padding:0 8px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:flex;align-items:center;gap:5px;font:700 11px Tahoma"><span style="width:0;height:0;border-left:8px solid #1c7a3e;border-top:5px solid transparent;border-bottom:5px solid transparent"></span>{{ t.bRun }}</div>
+</sc-if>
+<div style="height:22px;padding:0 7px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:flex;align-items:center;gap:4px;font-size:11px"><span style="display:flex;gap:2px"><span style="width:3px;height:9px;background:#3c3c3c"></span><span style="width:3px;height:9px;background:#3c3c3c"></span></span>{{ t.bPause }}</div>
+<div style="height:22px;padding:0 7px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:8px;height:8px;background:#8a2b22"></span>{{ t.bStop }}</div>
+<div style="height:22px;padding:0 7px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:flex;align-items:center;font-size:11px">{{ t.bStep }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="color:#3c3c3c">{{ t.tbGrid }}</span>
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:19px"><span style="padding:0 6px;font:10px/19px 'Lucida Console',monospace">2.54 mm</span><span style="width:15px;height:17px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:7px">▼</span></div>
+<span style="color:#3c3c3c;margin-left:6px">{{ t.tbZoom }}</span>
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:19px"><span style="padding:0 6px;font:10px/19px 'Lucida Console',monospace">160%</span><span style="width:15px;height:17px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:7px">▼</span></div>
+</div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:6px;padding-right:2px">
+<div style="display:flex;align-items:center;gap:5px;height:20px;padding:0 7px;background:var(--press);border:1px solid;border-color:var(--sunkBc);font:10px/1 'Lucida Console',monospace"><span style="width:7px;height:7px;border-radius:50%;background:#1c7a3e;box-shadow:0 0 4px #34d17a"></span>SPICE3f5</div>
+</div>
+</div>
+
+<div style="display:flex;flex:1;min-height:0">
+
+<div style="width:236px;flex:none;display:flex;flex-direction:column;border-right:1px solid var(--shad);box-shadow:1px 0 0 var(--lite);background:var(--face)">
+<div style="display:flex;align-items:center;height:19px;padding:0 4px;background:var(--cap);color:var(--capFg);font-weight:700;font-size:10px">{{ t.pnLib }}<span style="margin-left:auto;font-size:9px">▾</span></div>
+<div style="padding:4px;display:flex;gap:3px">
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:19px;padding:0 5px;color:#8a8a8a;font-size:10px">{{ t.libSearch }}</div>
+<div style="width:22px;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:10px">🔍</div>
+</div>
+<div style="flex:1;margin:0 4px 4px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);overflow:hidden;display:flex;flex-direction:column">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="12">
+<sc-if value="{{ c.sel }}">
+<div style="display:flex;align-items:center;gap:5px;padding:3px 5px;background:var(--sel);color:#fff;font-size:11px"><span style="width:8px;text-align:center;font-size:8px">−</span><span style="width:16px;height:14px;flex:none;background:#e8b04a;border:1px solid #7d5a19;display:grid;place-items:center;font:700 8px/1 'Lucida Console',monospace;color:#2b1f06">{{ c.g }}</span>{{ c.label }}<span style="margin-left:auto;font:9px 'Lucida Console',monospace;opacity:.8">{{ c.n }}</span></div>
+</sc-if>
+<sc-if value="{{ c.unsel }}">
+<div style="display:flex;align-items:center;gap:5px;padding:3px 5px;font-size:11px;color:#1a1a1a"><span style="width:8px;text-align:center;font-size:8px;color:#555">+</span><span style="width:16px;height:14px;flex:none;background:#c9d3dc;border:1px solid #6f7d89;display:grid;place-items:center;font:700 8px/1 'Lucida Console',monospace;color:#243240">{{ c.g }}</span>{{ c.label }}<span style="margin-left:auto;font:9px 'Lucida Console',monospace;color:#7a7a7a">{{ c.n }}</span></div>
+</sc-if>
+</sc-for>
+<div style="border-top:1px solid #dcdad6;padding:3px 0 5px;background:#f7f6f3">
+<div style="font-size:10px;color:#5a5a5a;padding:1px 8px 3px">{{ t.libSub }}</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:0 6px">
+<div style="background:#12161b;border:1px solid var(--sel);box-shadow:0 0 0 1px #e8b04a;padding:4px 2px;display:grid;place-items:center"><svg viewBox="-14 -8 28 16" width="40" height="24" style="color:#d9e6f2"><use href="#resH" transform="translate(-11,0)"></use></svg></div>
+<div style="background:#12161b;border:1px solid #3a4652;padding:4px 2px;display:grid;place-items:center"><svg viewBox="-14 -14 28 28" width="40" height="24" style="color:#9fb6c9"><use href="#capV" transform="translate(0,-12)"></use></svg></div>
+<div style="background:#12161b;border:1px solid #3a4652;padding:4px 2px;display:grid;place-items:center"><svg viewBox="-14 -14 28 28" width="40" height="24" style="color:#9fb6c9"><use href="#ecapV" transform="translate(0,-12)"></use></svg></div>
+<div style="background:#12161b;border:1px solid #3a4652;padding:4px 2px;display:grid;place-items:center"><svg viewBox="-16 -14 32 28" width="40" height="24" style="color:#9fb6c9"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M-13 0h4M9 0h4"></path><path d="M-9 0q2-6 4 0t4 0 4 0 4 0"></path></g></svg></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px 6px 0;font:8px/1.2 'Lucida Console',monospace;color:#444;text-align:center">
+<div>R · 1/4W</div><div>C · film</div><div>C · elec</div><div>L · coil</div>
+</div>
+</div>
+</div>
+<div style="padding:0 4px 4px;display:flex;gap:3px">
+<div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.libPlace }}</div>
+<div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.libFav }}</div>
+</div>
+</div>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--face)">
+<div style="display:flex;align-items:flex-end;gap:2px;height:22px;padding:3px 6px 0;flex:none">
+<sc-for list="{{ modes }}" as="md" hint-placeholder-count="4">
+<sc-if value="{{ md.on }}"><div style="padding:3px 13px 4px;background:var(--face);border:1px solid;border-color:var(--lite) var(--shad) transparent var(--lite);font:700 11px Tahoma;position:relative;top:1px;z-index:2">{{ md.label }}</div></sc-if>
+<sc-if value="{{ md.off }}"><div style="padding:2px 13px 3px;background:var(--face2);border:1px solid;border-color:var(--tabBc);font:11px Tahoma;color:#3a3a3a">{{ md.label }}</div></sc-if>
+</sc-for>
+<div style="margin-left:auto;display:flex;gap:4px;align-items:center;font:9px/1 'Lucida Console',monospace;color:#4a4a4a;padding-bottom:3px">{{ t.sheetOf }}</div>
+</div>
+
+<div style="flex:1;min-height:0;margin:0 6px 4px;background:#12161b;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);position:relative;overflow:hidden">
+
+<sc-if value="{{ isSchemLike }}" hint-placeholder-val="{{ true }}">
+<svg viewBox="0 0 1100 700" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+<rect x="0" y="0" width="1100" height="700" fill="#12161b"></rect>
+<rect x="0" y="0" width="1100" height="700" fill="url(#dots)"></rect>
+<g stroke="#93a9bd" stroke-width="1.6" fill="none" stroke-linecap="square">
+<line x1="80" y1="90" x2="960" y2="90" stroke="#b9cbdb" stroke-width="2"></line>
+<line x1="80" y1="610" x2="960" y2="610" stroke="#b9cbdb" stroke-width="2"></line>
+<rect x="70" y="320" width="42" height="70" stroke="#93a9bd"></rect>
+<line x1="112" y1="338" x2="112" y2="140"></line><line x1="112" y1="140" x2="140" y2="140"></line>
+<line x1="180" y1="140" x2="200" y2="140"></line>
+<rect x="200" y="108" width="112" height="64" stroke="#93a9bd"></rect>
+<line x1="312" y1="140" x2="360" y2="140"></line><line x1="360" y1="140" x2="360" y2="90"></line>
+<line x1="256" y1="172" x2="256" y2="610"></line>
+<line x1="112" y1="372" x2="112" y2="610"></line>
+<line x1="190" y1="140" x2="190" y2="240"></line><line x1="190" y1="264" x2="190" y2="610"></line>
+<line x1="336" y1="140" x2="336" y2="240"></line><line x1="336" y1="264" x2="336" y2="610"></line>
+<rect x="450" y="230" width="140" height="200" stroke="#93a9bd"></rect>
+<line x1="450" y1="265" x2="410" y2="265"></line><line x1="410" y1="265" x2="410" y2="610"></line>
+<line x1="450" y1="310" x2="420" y2="310"></line><line x1="420" y1="310" x2="420" y2="555"></line><line x1="420" y1="555" x2="760" y2="555"></line>
+<line x1="450" y1="355" x2="340" y2="355"></line><line x1="340" y1="355" x2="340" y2="440"></line><line x1="340" y1="490" x2="340" y2="520"></line><line x1="340" y1="546" x2="340" y2="610"></line>
+<line x1="450" y1="400" x2="382" y2="400"></line><line x1="382" y1="400" x2="382" y2="90"></line>
+<line x1="590" y1="265" x2="640" y2="265"></line><line x1="640" y1="265" x2="640" y2="90"></line>
+<line x1="590" y1="310" x2="700" y2="310"></line><line x1="660" y1="310" x2="660" y2="230"></line><line x1="660" y1="180" x2="660" y2="90"></line>
+<line x1="590" y1="355" x2="700" y2="355"></line><line x1="700" y1="310" x2="700" y2="322"></line><line x1="700" y1="343" x2="700" y2="355"></line>
+<line x1="700" y1="355" x2="760" y2="355"></line><line x1="760" y1="355" x2="760" y2="470"></line><line x1="760" y1="494" x2="760" y2="610"></line>
+<line x1="590" y1="400" x2="830" y2="400"></line><line x1="830" y1="400" x2="830" y2="470"></line><line x1="830" y1="494" x2="830" y2="610"></line>
+<rect x="960" y="300" width="46" height="112" stroke="#93a9bd"></rect>
+<line x1="960" y1="326" x2="920" y2="326"></line><line x1="960" y1="356" x2="920" y2="356"></line><line x1="960" y1="386" x2="920" y2="386"></line>
+</g>
+<g style="color:#93a9bd">
+<use href="#resH" transform="translate(140,140)"></use>
+<use href="#ecapV" transform="translate(190,240)"></use>
+<use href="#capV" transform="translate(336,240)"></use>
+<use href="#resV" transform="translate(340,440)"></use>
+<use href="#ledV" transform="translate(340,520)"></use>
+<use href="#resV" transform="translate(660,180)"></use>
+<use href="#capV" transform="translate(760,470)"></use>
+<use href="#capV" transform="translate(830,470)"></use>
+</g>
+<g style="color:#e8b04a"><use href="#resV" transform="translate(700,293) scale(1,0.42)"></use><rect x="686" y="316" width="28" height="34" fill="none" stroke="#e8b04a" stroke-width="1.6"></rect></g>
+<g fill="none" stroke="#e8b04a" stroke-width="1" stroke-dasharray="3 2"><rect x="678" y="300" width="44" height="66"></rect></g>
+<g fill="#e8b04a"><rect x="674" y="296" width="7" height="7"></rect><rect x="719" y="296" width="7" height="7"></rect><rect x="674" y="363" width="7" height="7"></rect><rect x="719" y="363" width="7" height="7"></rect></g>
+<g fill="#93a9bd"><circle cx="190" cy="140" r="3"></circle><circle cx="336" cy="140" r="3"></circle><circle cx="360" cy="90" r="3"></circle><circle cx="382" cy="90" r="3"></circle><circle cx="640" cy="90" r="3"></circle><circle cx="660" cy="90" r="3"></circle><circle cx="660" cy="310" r="3"></circle><circle cx="760" cy="355" r="3"></circle><circle cx="760" cy="555" r="3"></circle><circle cx="112" cy="610" r="3"></circle><circle cx="190" cy="610" r="3"></circle><circle cx="256" cy="610" r="3"></circle><circle cx="336" cy="610" r="3"></circle><circle cx="340" cy="610" r="3"></circle><circle cx="410" cy="610" r="3"></circle><circle cx="760" cy="610" r="3"></circle><circle cx="830" cy="610" r="3"></circle></g>
+<g style="color:#93a9bd"><use href="#gnd" transform="translate(520,610)"></use></g>
+<g fill="#12161b" stroke="#93a9bd" stroke-width="1.6"><rect x="450" y="230" width="140" height="200"></rect></g>
+<g fill="#cfdcE6" font-family="'Lucida Console',monospace" font-size="13" text-anchor="middle"><text x="520" y="316">NE555</text><text x="520" y="334" font-size="10" fill="#7f97ab">U2 · DIP-8</text></g>
+<g fill="#7f97ab" font-family="'Lucida Console',monospace" font-size="9"><text x="456" y="262">1 GND</text><text x="456" y="307">2 TRG</text><text x="456" y="352">3 OUT</text><text x="456" y="397">4 RST</text><text x="584" y="262" text-anchor="end">VCC 8</text><text x="584" y="307" text-anchor="end">DIS 7</text><text x="584" y="352" text-anchor="end">THR 6</text><text x="584" y="397" text-anchor="end">CTL 5</text></g>
+<g fill="#12161b" stroke="#93a9bd" stroke-width="1.6"><rect x="200" y="108" width="112" height="64"></rect></g>
+<g fill="#cfdce6" font-family="'Lucida Console',monospace" font-size="12" text-anchor="middle"><text x="256" y="136">LM7805</text><text x="256" y="152" font-size="9" fill="#7f97ab">U1 · TO-220</text></g>
+<g fill="#12161b" stroke="#93a9bd" stroke-width="1.6"><rect x="70" y="320" width="42" height="70"></rect><rect x="960" y="300" width="46" height="112"></rect></g>
+<g fill="#7f97ab" font-family="'Lucida Console',monospace" font-size="9"><text x="76" y="342">J1</text><text x="76" y="356">DC</text><text x="76" y="370">IN</text><text x="966" y="318">J2</text><text x="966" y="332">MCU</text></g>
+<g fill="#93a9bd"><circle cx="112" cy="338" r="2.5"></circle><circle cx="112" cy="372" r="2.5"></circle><circle cx="960" cy="326" r="2.5"></circle><circle cx="960" cy="356" r="2.5"></circle><circle cx="960" cy="386" r="2.5"></circle></g>
+<sc-if value="{{ netLabels }}" hint-placeholder-val="{{ true }}">
+<g font-family="'Lucida Console',monospace" font-size="10">
+<g fill="#6fd3e0"><text x="86" y="82">+9V_IN</text><text x="404" y="82">+5V</text><text x="86" y="628">GND</text></g>
+<g fill="#6fd3e0"><rect x="884" y="317" width="34" height="14" fill="#12161b" stroke="#2c5f68"></rect><text x="888" y="328">+5V</text><rect x="884" y="347" width="34" height="14" fill="#12161b" stroke="#2c5f68"></rect><text x="888" y="358">OUT</text><rect x="884" y="377" width="34" height="14" fill="#12161b" stroke="#2c5f68"></rect><text x="888" y="388">GND</text></g>
+</g>
+</sc-if>
+<g font-family="'Lucida Console',monospace" font-size="10" fill="#8fa8bd">
+<text x="152" y="126">D1 1N4007</text><text x="204" y="252">C1 470µ/25V</text><text x="350" y="252">C2 100n</text><text x="354" y="470">R4 470Ω</text><text x="354" y="546">D2 LED RED</text><text x="674" y="212">R1 10k</text><text x="734" y="336" fill="#e8b04a">R2 47k</text><text x="774" y="486">C3 10n</text><text x="844" y="486">C4 10n</text>
+</g>
+<g><circle cx="340" cy="380" r="4" fill="none" stroke="#d76a5a" stroke-width="1.6"></circle><text x="350" y="384" font-family="'Lucida Console',monospace" font-size="9" fill="#d76a5a">TP1</text></g>
+<g fill="none" stroke="#2b3440"><rect x="800" y="596" width="288" height="96"></rect><line x1="800" y1="620" x2="1088" y2="620"></line><line x1="800" y1="644" x2="1088" y2="644"></line><line x1="800" y1="668" x2="1088" y2="668"></line><line x1="944" y1="644" x2="944" y2="692"></line></g>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#7f97ab"><text x="806" y="612">555 ASTABLE + 5V REG · SHEET 1/3</text><text x="806" y="636">ELECTROBENCH ME · REV C</text><text x="806" y="660">DATE 03-09-2026</text><text x="950" y="660">SCALE 1:1</text><text x="806" y="684">DRC 0 ERR</text><text x="950" y="684">NETS 14</text></g>
+<sc-if value="{{ running }}">
+<g stroke="#e8b04a" stroke-width="2.4" fill="none" stroke-dasharray="7 5" style="animation:flow .8s linear infinite;filter:drop-shadow(0 0 3px rgba(232,176,74,.9))">
+<line x1="80" y1="90" x2="960" y2="90"></line><line x1="640" y1="90" x2="640" y2="265"></line><line x1="382" y1="90" x2="382" y2="400"></line><line x1="660" y1="90" x2="660" y2="310"></line><line x1="112" y1="338" x2="112" y2="140"></line><line x1="112" y1="140" x2="200" y2="140"></line><line x1="312" y1="140" x2="360" y2="140"></line><line x1="360" y1="140" x2="360" y2="90"></line>
+</g>
+<g stroke="#5fd0a8" stroke-width="2.4" fill="none" stroke-dasharray="7 5" style="animation:flow .5s linear infinite;filter:drop-shadow(0 0 3px rgba(95,208,168,.8))">
+<line x1="450" y1="355" x2="340" y2="355"></line><line x1="340" y1="355" x2="340" y2="610"></line>
+</g>
+<circle cx="340" cy="533" r="16" fill="#d94f3d" opacity=".28"></circle><circle cx="340" cy="533" r="9" fill="#ff7a5f" opacity=".7" style="animation:blink 1s steps(2) infinite"></circle>
+<g font-family="'Lucida Console',monospace" font-size="10">
+<g fill="#0d1418"><rect x="368" y="98" width="52" height="15" fill="#0d1418" stroke="#e8b04a"></rect><rect x="596" y="240" width="58" height="15" fill="#0d1418" stroke="#e8b04a"></rect><rect x="596" y="330" width="58" height="15" fill="#0d1418" stroke="#5fd0a8"></rect><rect x="286" y="346" width="52" height="15" fill="#0d1418" stroke="#5fd0a8"></rect><rect x="768" y="326" width="58" height="15" fill="#0d1418" stroke="#6fd3e0"></rect></g>
+<g fill="#e8b04a"><text x="372" y="110">5.02 V</text><text x="600" y="252">5.00 V</text></g>
+<g fill="#5fd0a8"><text x="600" y="342">4.21 V</text><text x="290" y="358">3.98 V</text></g>
+<g fill="#6fd3e0"><text x="772" y="338">2.14 V</text></g>
+</g>
+<g><rect x="24" y="24" width="196" height="52" fill="#0d1418" stroke="#e8b04a"></rect><text x="36" y="44" font-family="'Lucida Console',monospace" font-size="11" fill="#e8b04a">▶ RUN · TRAN 0-20ms</text><text x="36" y="62" font-family="'Lucida Console',monospace" font-size="10" fill="#8fa8bd">t = 12.480 ms · f = 1.44 kHz</text></g>
+</sc-if>
+</svg>
+<sc-if value="{{ running }}">
+<div style="position:absolute;left:0;right:0;bottom:0;height:184px;background:var(--face);border-top:1px solid var(--shad);box-shadow:0 1px 0 var(--lite) inset;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;height:17px;padding:0 4px;background:var(--cap);color:var(--capFg);font:700 10px Tahoma">{{ t.iScope }} — CH1 OUT · CH2 THR<span style="margin-left:auto;font-size:9px">▭ ✕</span></div>
+<div style="flex:1;display:flex;gap:4px;padding:4px">
+<div style="flex:1;background:#04160f;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);position:relative">
+<svg viewBox="0 0 720 140" width="100%" height="100%" preserveAspectRatio="none" style="display:block"><rect width="720" height="140" fill="url(#scopegrid)"></rect>
+<polyline points="0,110 0,30 60,30 60,110 120,110 120,30 180,30 180,110 240,110 240,30 300,30 300,110 360,110 360,30 420,30 420,110 480,110 480,30 540,30 540,110 600,110 600,30 660,30 660,110 720,110" fill="none" stroke="#5fd0a8" stroke-width="2" style="filter:drop-shadow(0 0 3px #5fd0a8)"></polyline>
+<polyline points="0,100 30,58 60,44 90,64 120,100 150,58 180,44 210,64 240,100 270,58 300,44 330,64 360,100 390,58 420,44 450,64 480,100 510,58 540,44 570,64 600,100 630,58 660,44 690,64 720,100" fill="none" stroke="#e8b04a" stroke-width="1.6" style="filter:drop-shadow(0 0 3px #e8b04a)"></polyline>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#3f7d68"><text x="6" y="14">2V/div</text><text x="640" y="14">0.2ms/div</text></g>
+</svg>
+</div>
+<div style="width:170px;display:flex;flex-direction:column;gap:3px">
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px;font:10px/1.6 'Lucida Console',monospace">
+<div style="display:flex"><span style="color:#1c7a3e">CH1 Vpp</span><span style="margin-left:auto">4.98 V</span></div>
+<div style="display:flex"><span style="color:#8a6420">CH2 Vpp</span><span style="margin-left:auto">1.72 V</span></div>
+<div style="display:flex"><span>FREQ</span><span style="margin-left:auto">1.442 kHz</span></div>
+<div style="display:flex"><span>DUTY</span><span style="margin-left:auto">63.2 %</span></div>
+<div style="display:flex"><span>RISE</span><span style="margin-left:auto">142 ns</span></div>
+</div>
+<div style="display:flex;gap:3px">
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.iAuto }}</div>
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.iCursor }}</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isLib }}">
+<div style="position:absolute;inset:0;background:var(--face);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:5px;padding:5px 6px;border-bottom:1px solid var(--shad);box-shadow:0 1px 0 var(--lite)">
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:20px;width:280px;padding:0 6px;font:11px Tahoma">555<span style="width:1px;height:12px;background:#000;margin-left:1px"></span></div>
+<div style="height:20px;padding:0 9px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:11px">{{ t.libSearchBtn }}</div>
+<span style="margin-left:10px;font-size:11px;color:#3a3a3a">{{ t.libSort }}</span>
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:20px"><span style="padding:0 7px;font:10px/20px Tahoma">{{ t.libSortVal }}</span><span style="width:16px;height:18px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:7px">▼</span></div>
+<div style="margin-left:auto;display:flex;gap:2px">
+<div style="width:24px;height:20px;background:var(--press);border:1px solid;border-color:var(--sunkBc);display:grid;place-items:center"><div style="display:grid;grid-template-columns:1fr 1fr;gap:2px"><span style="width:4px;height:4px;background:#333"></span><span style="width:4px;height:4px;background:#333"></span><span style="width:4px;height:4px;background:#333"></span><span style="width:4px;height:4px;background:#333"></span></div></div>
+<div style="width:24px;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center"><div style="display:flex;flex-direction:column;gap:2px"><span style="width:11px;height:2px;background:#333"></span><span style="width:11px;height:2px;background:#333"></span><span style="width:11px;height:2px;background:#333"></span></div></div>
+</div>
+</div>
+<div style="flex:1;min-height:0;display:flex">
+<div style="flex:1;min-width:0;padding:7px;display:flex;flex-direction:column;gap:6px;overflow:hidden">
+<div style="display:flex;gap:5px;flex-wrap:wrap">
+<sc-for list="{{ chips }}" as="ch" hint-placeholder-count="6">
+<sc-if value="{{ ch.on }}"><div style="padding:2px 9px;background:var(--sel);color:#fff;font-size:10px;border:1px solid #051239">{{ ch.label }}</div></sc-if>
+<sc-if value="{{ ch.off }}"><div style="padding:2px 9px;background:#e8e6e2;color:#2a2a2a;font-size:10px;border:1px solid;border-color:#ffffff #9a9691 #9a9691 #ffffff">{{ ch.label }}</div></sc-if>
+</sc-for>
+</div>
+<div style="flex:1;min-height:0;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:8px;overflow:hidden">
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+<sc-for list="{{ parts }}" as="p" hint-placeholder-count="24">
+<div style="border:1px solid #cfcdc8;background:#f8f8f6">
+<div style="height:58px;background:#12161b;display:grid;place-items:center;border-bottom:1px solid #cfcdc8;position:relative">
+<span style="font:700 15px/1 'Lucida Console',monospace;color:#8fb4cf">{{ p.sym }}</span>
+<span style="position:absolute;left:3px;top:3px;font:8px/1 'Lucida Console',monospace;color:#e8b04a">{{ p.tag }}</span>
+</div>
+<div style="padding:4px 5px">
+<div style="font:700 10px/1.3 'Lucida Console',monospace;color:#12161b;white-space:nowrap;overflow:hidden">{{ p.pn }}</div>
+<div style="font-size:9px;line-height:1.3;color:#5a5a5a;height:24px;overflow:hidden">{{ p.desc }}</div>
+<div style="display:flex;gap:3px;margin-top:3px;font:8px/1 'Lucida Console',monospace;color:#4a6a80"><span style="background:#e4ebf1;border:1px solid #c3cfd9;padding:1px 3px">{{ p.pkg }}</span><span style="background:#e4ebf1;border:1px solid #c3cfd9;padding:1px 3px">SPICE</span></div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+<div style="width:290px;flex:none;border-left:1px solid var(--shad);box-shadow:1px 0 0 var(--lite) inset;padding:7px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;height:18px;padding:0 5px;background:var(--cap);color:var(--capFg);font:700 10px Tahoma">{{ t.libDatasheet }}</div>
+<div style="background:#12161b;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:150px;position:relative">
+<svg viewBox="0 0 280 150" width="100%" height="100%" style="display:block"><rect width="280" height="150" fill="url(#dots)"></rect>
+<rect x="96" y="30" width="88" height="90" fill="#1b2027" stroke="#8fb4cf" stroke-width="1.4"></rect>
+<path d="M128 30a12 12 0 0 0 24 0" fill="none" stroke="#8fb4cf" stroke-width="1.4"></path>
+<g fill="#6f8ba1"><rect x="82" y="42" width="14" height="6"></rect><rect x="82" y="62" width="14" height="6"></rect><rect x="82" y="82" width="14" height="6"></rect><rect x="82" y="102" width="14" height="6"></rect><rect x="184" y="42" width="14" height="6"></rect><rect x="184" y="62" width="14" height="6"></rect><rect x="184" y="82" width="14" height="6"></rect><rect x="184" y="102" width="14" height="6"></rect></g>
+<g font-family="'Lucida Console',monospace" font-size="7" fill="#7f97ab"><text x="64" y="48">1 GND</text><text x="64" y="68">2 TRG</text><text x="64" y="88">3 OUT</text><text x="64" y="108">4 RST</text><text x="202" y="48">8 VCC</text><text x="202" y="68">7 DIS</text><text x="202" y="88">6 THR</text><text x="202" y="108">5 CTL</text></g>
+<text x="140" y="80" font-family="'Lucida Console',monospace" font-size="10" fill="#cfdce6" text-anchor="middle">NE555P</text>
+<g font-family="'Lucida Console',monospace" font-size="7" fill="#4a6a80"><text x="8" y="142">DIP-8 · 9.81 × 6.35 mm</text></g>
+</svg>
+</div>
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);flex:1;min-height:0;overflow:hidden">
+<sc-for list="{{ specs }}" as="sp" hint-placeholder-count="9">
+<div style="display:flex;font:10px/1.7 Tahoma;border-bottom:1px solid #eeece8;padding:0 6px"><span style="color:#4a4a4a">{{ sp.k }}</span><span style="margin-left:auto;font-family:'Lucida Console',monospace;color:#12161b">{{ sp.v }}</span></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:4px">
+<button style="flex:1;height:22px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">{{ t.libPlace }}</button>
+<button style="flex:1;height:22px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.libPdf }}</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBread }}">
+<svg viewBox="0 0 1120 700" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+<rect width="1120" height="700" fill="#12161b"></rect><rect width="1120" height="700" fill="url(#dots)"></rect>
+<rect x="34" y="54" width="812" height="418" rx="5" fill="#0d1114"></rect>
+<rect x="30" y="50" width="812" height="418" rx="5" fill="#efece4" stroke="#c9c5ba"></rect>
+<rect x="46" y="66" width="780" height="38" fill="#efece4"></rect><rect x="46" y="66" width="779" height="38" fill="url(#tie)"></rect>
+<line x1="46" y1="60" x2="826" y2="60" stroke="#c0473a" stroke-width="2"></line><line x1="46" y1="110" x2="826" y2="110" stroke="#3a5fa0" stroke-width="2"></line>
+<text x="38" y="64" font-family="'Lucida Console',monospace" font-size="10" fill="#c0473a">+</text><text x="38" y="114" font-family="'Lucida Console',monospace" font-size="10" fill="#3a5fa0">−</text>
+<rect x="46" y="142" width="779" height="95" fill="url(#tie)"></rect>
+<rect x="46" y="237" width="780" height="44" fill="#e4e0d6"></rect><line x1="46" y1="259" x2="826" y2="259" stroke="#cfcabd" stroke-width="1"></line>
+<rect x="46" y="281" width="779" height="95" fill="url(#tie)"></rect>
+<rect x="46" y="414" width="779" height="38" fill="url(#tie)"></rect>
+<line x1="46" y1="408" x2="826" y2="408" stroke="#c0473a" stroke-width="2"></line><line x1="46" y1="458" x2="826" y2="458" stroke="#3a5fa0" stroke-width="2"></line>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#8d8f92"><text x="52" y="136">1</text><text x="147" y="136">6</text><text x="242" y="136">11</text><text x="337" y="136">16</text><text x="432" y="136">21</text><text x="527" y="136">26</text><text x="622" y="136">31</text><text x="717" y="136">36</text><text x="793" y="136">40</text><text x="20" y="160">J</text><text x="20" y="217">F</text><text x="20" y="300">E</text><text x="20" y="357">A</text></g>
+<g><rect x="330" y="240" width="152" height="60" rx="3" fill="#23262a" stroke="#3c4046"></rect><path d="M394 240a12 12 0 0 0 24 0" fill="none" stroke="#5c6169" stroke-width="1.6"></path><circle cx="344" cy="290" r="3" fill="#5c6169"></circle>
+<g fill="#8a8f96"><rect x="341" y="228" width="9" height="14"></rect><rect x="379" y="228" width="9" height="14"></rect><rect x="417" y="228" width="9" height="14"></rect><rect x="455" y="228" width="9" height="14"></rect><rect x="341" y="298" width="9" height="14"></rect><rect x="379" y="298" width="9" height="14"></rect><rect x="417" y="298" width="9" height="14"></rect><rect x="455" y="298" width="9" height="14"></rect></g>
+<text x="406" y="276" font-family="'Lucida Console',monospace" font-size="12" fill="#c8cdd4" text-anchor="middle">NE555P</text></g>
+<g><rect x="150" y="180" width="76" height="16" rx="7" fill="#e0cfa8" stroke="#b6a377"></rect><rect x="166" y="180" width="7" height="16" fill="#6b4a2a"></rect><rect x="178" y="180" width="7" height="16" fill="#111"></rect><rect x="190" y="180" width="7" height="16" fill="#c0473a"></rect><rect x="206" y="180" width="5" height="16" fill="#c9a227"></rect>
+<path d="M150 188H132v-27" fill="none" stroke="#9aa0a6" stroke-width="1.8"></path><path d="M226 188h18v-27" fill="none" stroke="#9aa0a6" stroke-width="1.8"></path></g>
+<g><rect x="560" y="180" width="76" height="16" rx="7" fill="#e0cfa8" stroke="#b6a377"></rect><rect x="576" y="180" width="7" height="16" fill="#c9a227"></rect><rect x="588" y="180" width="7" height="16" fill="#5a3fa0"></rect><rect x="600" y="180" width="7" height="16" fill="#c0473a"></rect><rect x="616" y="180" width="5" height="16" fill="#c9a227"></rect>
+<path d="M560 188h-18v-27" fill="none" stroke="#9aa0a6" stroke-width="1.8"></path><path d="M636 188h18v-27" fill="none" stroke="#9aa0a6" stroke-width="1.8"></path></g>
+<g><ellipse cx="704" cy="330" rx="17" ry="20" fill="#3f7d68" opacity=".25"></ellipse><circle cx="704" cy="330" r="13" fill="#d94f3d" stroke="#8f2f22" stroke-width="1.4"></circle><circle cx="699" cy="325" r="4" fill="#ff9c85" opacity=".8"></circle><path d="M698 343v22M710 343v22" stroke="#9aa0a6" stroke-width="1.8" fill="none"></path></g>
+<g><rect x="238" y="300" width="20" height="34" rx="2" fill="#2c3f6b" stroke="#1b2846"></rect><path d="M242 334v32M254 334v32" stroke="#9aa0a6" stroke-width="1.8" fill="none"></path><text x="248" y="296" font-family="'Lucida Console',monospace" font-size="8" fill="#8d8f92" text-anchor="middle">C1</text></g>
+<g fill="none" stroke-width="3.4" stroke-linecap="round">
+<path d="M60 420C120 400 240 402 344 320" stroke="#c0473a"></path>
+<path d="M60 446C130 470 300 478 460 320" stroke="#1b1d20"></path>
+<path d="M456 240C470 190 540 170 542 160" stroke="#c9a227"></path>
+<path d="M380 240C360 200 300 190 244 180" stroke="#3f9d5a"></path>
+<path d="M418 300C500 340 620 336 692 332" stroke="#3a5fa0"></path>
+<path d="M712 366C740 420 780 430 800 446" stroke="#1b1d20"></path>
+<path d="M654 160C700 130 770 140 800 66" stroke="#c0473a"></path>
+</g>
+<g><rect x="870" y="50" width="216" height="196" rx="3" fill="#d6d3ce" stroke="#404040"></rect><rect x="870" y="50" width="216" height="16" fill="#4a5f7a"></rect><text x="878" y="62" font-family="Tahoma" font-size="10" fill="#fff" font-weight="700">DC POWER SUPPLY · 0-30V</text>
+<rect x="882" y="76" width="192" height="44" fill="#0a1a12" stroke="#2b3a32"></rect><text x="1066" y="106" font-family="'Lucida Console',monospace" font-size="26" fill="#48e08a" text-anchor="end">9.00</text><text x="890" y="92" font-family="'Lucida Console',monospace" font-size="9" fill="#2f7a55">VOLT</text>
+<rect x="882" y="126" width="192" height="34" fill="#0a1a12" stroke="#2b3a32"></rect><text x="1066" y="150" font-family="'Lucida Console',monospace" font-size="18" fill="#e8b04a" text-anchor="end">0.128</text><text x="890" y="140" font-family="'Lucida Console',monospace" font-size="9" fill="#8a6420">AMP</text>
+<g><circle cx="908" cy="196" r="20" fill="#c9c5bf" stroke="#8a8680" stroke-width="2"></circle><line x1="908" y1="196" x2="920" y2="182" stroke="#333" stroke-width="2.5"></line><circle cx="966" cy="196" r="14" fill="#c9c5bf" stroke="#8a8680" stroke-width="2"></circle><line x1="966" y1="196" x2="966" y2="184" stroke="#333" stroke-width="2.5"></line>
+<circle cx="1020" cy="190" r="8" fill="#c0473a" stroke="#7a2c22" stroke-width="2"></circle><circle cx="1052" cy="190" r="8" fill="#1b1d20" stroke="#000" stroke-width="2"></circle><text x="1020" y="216" font-family="'Lucida Console',monospace" font-size="8" fill="#333" text-anchor="middle">+</text><text x="1052" y="216" font-family="'Lucida Console',monospace" font-size="8" fill="#333" text-anchor="middle">−</text></g>
+<text x="882" y="238" font-family="Tahoma" font-size="9" fill="#333">CV MODE · OVP 12.0V</text></g>
+<g><rect x="870" y="262" width="216" height="180" rx="3" fill="#d6d3ce" stroke="#404040"></rect><rect x="870" y="262" width="216" height="16" fill="#4a5f7a"></rect><text x="878" y="274" font-family="Tahoma" font-size="10" fill="#fff" font-weight="700">FUNCTION GENERATOR · 2MHz</text>
+<rect x="882" y="288" width="192" height="52" fill="#04160f" stroke="#2b3a32"></rect>
+<polyline points="890,330 906,300 922,330 938,300 954,330 970,300 986,330 1002,300 1018,330 1034,300 1050,330 1066,300" fill="none" stroke="#48e08a" stroke-width="1.8"></polyline>
+<rect x="882" y="346" width="192" height="24" fill="#0a1a12" stroke="#2b3a32"></rect><text x="1066" y="364" font-family="'Lucida Console',monospace" font-size="14" fill="#e8b04a" text-anchor="end">1.000 kHz</text>
+<g fill="#c9c5bf" stroke="#8a8680"><rect x="884" y="380" width="42" height="18" rx="2"></rect><rect x="932" y="380" width="42" height="18" rx="2"></rect><rect x="980" y="380" width="42" height="18" rx="2"></rect><rect x="1028" y="380" width="46" height="18" rx="2"></rect></g>
+<g font-family="Tahoma" font-size="9" fill="#222" text-anchor="middle"><text x="905" y="393">SINE</text><text x="953" y="393">SQR</text><text x="1001" y="393">TRI</text><text x="1051" y="393">SWEEP</text></g>
+<text x="882" y="420" font-family="Tahoma" font-size="9" fill="#333">AMPL 5.00 Vpp · OFFSET 0.00 V</text><text x="882" y="434" font-family="Tahoma" font-size="9" fill="#333">DUTY 50% · OUT 50Ω</text></g>
+<g fill="none" stroke="#2b3440"><rect x="30" y="492" width="812" height="176"></rect></g>
+<g font-family="'Lucida Console',monospace" font-size="10" fill="#7f97ab"><text x="42" y="512">{{ t.bbLegend }}</text></g>
+<g><rect x="42" y="522" width="380" height="132" fill="#0d1418" stroke="#2b3440"></rect>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#8fa8bd"><text x="52" y="540">ROW  NET      TIE-POINTS  V(DC)   I(mA)</text><text x="52" y="558">J1   +9V_IN   40          9.00    128.4</text><text x="52" y="576">F11  TRIG     5           4.21    0.02</text><text x="52" y="594">E16  OUT      5           3.98    9.41</text><text x="52" y="612">E31  LED_A    5           1.94    9.38</text><text x="52" y="630">J-   GND      40          0.00    —</text></g></g>
+<g><rect x="436" y="522" width="406" height="132" fill="#0d1418" stroke="#2b3440"></rect>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#8fa8bd"><text x="446" y="540">{{ t.bbBoards }}</text></g>
+<g font-family="'Lucida Console',monospace" font-size="9"><text x="446" y="560" fill="#e8b04a">▣ 830-PT  BB-830   {{ t.bbActive }}</text><text x="446" y="578" fill="#6f8ba1">▢ 400-PT  BB-400</text><text x="446" y="596" fill="#6f8ba1">▢ PERF     PB-9X15  2.54mm</text><text x="446" y="614" fill="#6f8ba1">▢ PCB 2L   PCB-100X80</text><text x="446" y="632" fill="#6f8ba1">▢ DEV      UNO / ESP32 / STM32F4</text></g></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{ isPcb }}">
+<div style="position:absolute;inset:0;display:flex">
+<div style="flex:1;min-width:0;position:relative;background:#0e1013">
+<svg viewBox="0 0 840 700" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+<rect width="840" height="700" fill="#0e1013"></rect><rect width="840" height="700" fill="url(#dots)"></rect>
+<rect x="70" y="60" width="700" height="560" rx="6" fill="#12311f" stroke="#2f6b47" stroke-width="2"></rect>
+<rect x="94" y="84" width="652" height="512" fill="url(#pads)" opacity=".22"></rect>
+<g fill="none" stroke="#c98b4b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+<path d="M120 110H700"></path><path d="M120 570H700"></path>
+<path d="M300 200H210v120"></path><path d="M420 200h140v90"></path><path d="M300 320h60v120h180"></path><path d="M540 380h120v100"></path><path d="M210 440h70v90h180"></path>
+</g>
+<g fill="none" stroke="#5f7fb0" stroke-width="5" stroke-linecap="round" opacity=".8" stroke-dasharray="0"><path d="M360 110v56"></path><path d="M660 200v-40"></path><path d="M280 530v40"></path></g>
+<g fill="#c98b4b"><circle cx="360" cy="166" r="9"></circle><circle cx="660" cy="160" r="9"></circle><circle cx="280" cy="570" r="9"></circle></g>
+<g fill="#0e1013"><circle cx="360" cy="166" r="3.4"></circle><circle cx="660" cy="160" r="3.4"></circle><circle cx="280" cy="570" r="3.4"></circle></g>
+<g fill="none" stroke="#e6e6e0" stroke-width="1.6" opacity=".85">
+<rect x="300" y="200" width="120" height="130" rx="3"></rect><path d="M348 200a12 12 0 0 0 24 0"></path>
+<rect x="180" y="410" width="130" height="46" rx="3"></rect>
+<rect x="520" y="270" width="80" height="40" rx="3"></rect>
+<circle cx="640" cy="480" r="18"></circle>
+<rect x="100" y="140" width="46" height="70" rx="3"></rect>
+</g>
+<g fill="#f0efe9" font-family="'Lucida Console',monospace" font-size="12" text-anchor="middle" opacity=".9"><text x="360" y="272">U2</text><text x="245" y="438">U1</text><text x="560" y="295">J2</text><text x="640" y="485">D2</text><text x="123" y="180">J1</text></g>
+<g fill="#c98b4b"><rect x="316" y="192" width="14" height="16"></rect><rect x="352" y="192" width="14" height="16"></rect><rect x="388" y="192" width="14" height="16"></rect><rect x="404" y="192" width="14" height="16"></rect><rect x="316" y="322" width="14" height="16"></rect><rect x="352" y="322" width="14" height="16"></rect><rect x="388" y="322" width="14" height="16"></rect><rect x="404" y="322" width="14" height="16"></rect></g>
+<g fill="none" stroke="#e8b04a" stroke-width="1.4" stroke-dasharray="4 3"><rect x="292" y="192" width="136" height="146"></rect></g>
+<g fill="#e8b04a"><rect x="286" y="186" width="8" height="8"></rect><rect x="424" y="186" width="8" height="8"></rect><rect x="286" y="334" width="8" height="8"></rect><rect x="424" y="334" width="8" height="8"></rect></g>
+<g stroke="#6fd3e0" stroke-width="1.4" fill="none" stroke-dasharray="6 4" opacity=".75"><path d="M420 265h100v25"></path><path d="M310 265H210v175h70"></path></g>
+<g font-family="'Lucida Console',monospace" font-size="10" fill="#6f8ba1"><text x="76" y="646">PCB-100X80 · 2 LAYER · 1.6mm FR-4 · 35µm Cu</text><text x="600" y="646">DRC 0 / 0</text></g>
+<rect x="70" y="60" width="700" height="560" rx="6" fill="none" stroke="#8fd0a8" stroke-width="1" stroke-dasharray="8 5" opacity=".5"></rect>
+</svg>
+<div style="position:absolute;left:8px;top:8px;display:flex;gap:3px">
+<sc-for list="{{ pcbLayers }}" as="pl" hint-placeholder-count="6">
+<sc-if value="{{ pl.on }}"><div style="padding:3px 8px;background:#e8b04a;border:1px solid #8a6420;font:9px/1 'Lucida Console',monospace;color:#2b1f06">{{ pl.label }}</div></sc-if>
+<sc-if value="{{ pl.off }}"><div style="padding:3px 8px;background:#1b2027;border:1px solid #3a4652;font:9px/1 'Lucida Console',monospace;color:#8fa8bd">{{ pl.label }}</div></sc-if>
+</sc-for>
+</div>
+</div>
+<div style="width:314px;flex:none;background:var(--face);border-left:1px solid var(--shad);box-shadow:1px 0 0 var(--lite) inset;display:flex;flex-direction:column;gap:5px;padding:6px">
+<div style="display:flex;align-items:center;height:18px;padding:0 5px;background:linear-gradient(90deg,#7a5fa8,#b79ad4);color:#fff;font:700 10px Tahoma">✦ {{ t.pcbAi }}</div>
+<div style="font-size:10px;line-height:1.55;color:#2a2a2a;padding:0 2px">{{ t.pcbAiDesc }}</div>
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:6px;display:flex;flex-direction:column;gap:5px">
+<div style="font-weight:700;font-size:10px">{{ t.pcbGoal }}</div>
+<sc-for list="{{ aiGoals }}" as="g" hint-placeholder-count="4">
+<label style="display:flex;align-items:center;gap:5px;font-size:10px">
+<sc-if value="{{ g.on }}"><span style="width:11px;height:11px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:8px/1 Tahoma">✓</span></sc-if>
+<sc-if value="{{ g.off }}"><span style="width:11px;height:11px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ g.label }}</label>
+</sc-for>
+<div style="display:flex;align-items:center;gap:6px;font-size:10px;margin-top:2px">{{ t.pcbTrace }}
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:18px;margin-left:auto"><span style="padding:0 5px;font:10px/18px 'Lucida Console',monospace">0.35 mm</span><span style="width:14px;height:16px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:6px">▼</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:6px;font-size:10px">{{ t.pcbVia }}
+<div style="display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:18px;margin-left:auto"><span style="padding:0 5px;font:10px/18px 'Lucida Console',monospace">0.8 / 0.4</span><span style="width:14px;height:16px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:6px">▼</span></div>
+</div>
+</div>
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:6px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;font-size:10px"><span style="font-weight:700">{{ t.pcbPlacing }}</span><span style="margin-left:auto;font:10px 'Lucida Console',monospace">68%</span></div>
+<div style="height:14px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:1px;display:flex;gap:1px;overflow:hidden">
+<sc-for list="{{ barCells }}" as="b" hint-placeholder-count="20">
+<sc-if value="{{ b.on }}"><span style="flex:1;background:var(--sel)"></span></sc-if>
+<sc-if value="{{ b.off }}"><span style="flex:1;background:#e6e4e0"></span></sc-if>
+</sc-for>
+</div>
+<div style="font:9px/1.6 'Lucida Console',monospace;color:#333">
+<div>· PLACEMENT PASS 3/4 · 22 PARTS</div>
+<div>· RATSNEST LEN 1,842 → 1,106 mm</div>
+<div>· THERMAL: U1 MOVED TO EDGE</div>
+<div>· ROUTED 38 / 44 NETS</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);flex:1;min-height:0;overflow:hidden">
+<div style="display:flex;background:var(--face);border-bottom:1px solid var(--shad);font-size:9px"><span style="padding:2px 5px;flex:1;border-right:1px solid var(--shad)">{{ t.pcbCheck }}</span><span style="padding:2px 5px;width:54px">{{ t.pcbVal }}</span></div>
+<sc-for list="{{ drc }}" as="d" hint-placeholder-count="7">
+<div style="display:flex;font:9px/1.75 'Lucida Console',monospace;border-bottom:1px solid #f0eeeb;padding:0 5px"><span style="color:#2a2a2a">{{ d.k }}</span><span style="margin-left:auto;color:#1c7a3e">{{ d.v }}</span></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:4px">
+<button style="flex:1;height:24px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">✦ {{ t.pcbAuto }}</button>
+<button style="width:78px;height:24px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bCancel }}</button>
+</div>
+<div style="display:flex;gap:4px">
+<button style="flex:1;height:22px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.pcbGerber }}</button>
+<button style="flex:1;height:22px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.pcbPrint }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isInst }}">
+<div style="position:absolute;inset:0;background:#12161b">
+<svg viewBox="0 0 1100 700" width="100%" height="100%" preserveAspectRatio="none" style="display:block;opacity:.35"><rect width="1100" height="700" fill="#12161b"></rect><rect width="1100" height="700" fill="url(#dots)"></rect>
+<g stroke="#93a9bd" stroke-width="1.6" fill="none"><line x1="80" y1="90" x2="960" y2="90"></line><line x1="80" y1="610" x2="960" y2="610"></line><rect x="450" y="230" width="140" height="200"></rect><line x1="590" y1="265" x2="640" y2="265"></line><line x1="640" y1="265" x2="640" y2="90"></line><line x1="450" y1="355" x2="340" y2="355"></line><line x1="340" y1="355" x2="340" y2="610"></line></g>
+</svg>
+<div style="position:absolute;left:14px;top:12px;width:660px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),5px 5px 12px rgba(0,0,0,.45);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:19px;padding:0 3px 0 5px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 11px Tahoma">{{ t.iScope }} · MSO-4CH<span style="margin-left:auto;display:flex;gap:2px"><span style="width:15px;height:13px;background:var(--minBg);border:1px solid;border-color:var(--minBc);border-radius:var(--ctlRad);color:var(--ctlFg);display:grid;place-items:end center;font:8px/1 Tahoma;padding-bottom:2px">_</span><span style="width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></span></div>
+<div style="padding:5px;display:flex;gap:5px">
+<div style="flex:1;background:#04160f;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<svg viewBox="0 0 520 260" width="100%" height="240" preserveAspectRatio="none" style="display:block"><rect width="520" height="260" fill="url(#scopegrid)"></rect>
+<polyline points="0,200 0,60 60,60 60,200 120,200 120,60 180,60 180,200 240,200 240,60 300,60 300,200 360,200 360,60 420,60 420,200 480,200 480,60 520,60" fill="none" stroke="#5fd0a8" stroke-width="2.2" style="filter:drop-shadow(0 0 4px #5fd0a8)"></polyline>
+<polyline points="0,170 26,120 52,104 78,126 104,170 130,120 156,104 182,126 208,170 234,120 260,104 286,126 312,170 338,120 364,104 390,126 416,170 442,120 468,104 494,126 520,170" fill="none" stroke="#e8b04a" stroke-width="1.8" style="filter:drop-shadow(0 0 4px #e8b04a)"></polyline>
+<polyline points="0,232 40,232 40,222 80,222 80,232 120,232 120,222 160,222 160,232 200,232 200,222 240,222 240,232 280,232 280,222 320,222 320,232 360,232 360,222 400,222 400,232 440,232 440,222 480,222 480,232 520,232" fill="none" stroke="#6fd3e0" stroke-width="1.6"></polyline>
+<line x1="300" y1="0" x2="300" y2="260" stroke="#c9a227" stroke-width="1" stroke-dasharray="4 4"></line>
+<g font-family="'Lucida Console',monospace" font-size="9" fill="#3f7d68"><text x="6" y="14">CH1 2V/div</text><text x="86" y="14" fill="#8a6420">CH2 1V/div</text><text x="170" y="14" fill="#2c6f78">D0-D7</text><text x="446" y="14">50µs/div</text></g>
+<g fill="#c9a227" font-family="'Lucida Console',monospace" font-size="9"><text x="304" y="252">T</text></g>
+</svg>
+</div>
+<div style="width:118px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ scopeKnobs }}" as="k" hint-placeholder-count="4">
+<div style="background:var(--press);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);padding:3px 4px">
+<div style="font:9px/1.2 Tahoma;color:#2a2a2a">{{ k.label }}</div>
+<div style="font:11px/1.3 'Lucida Console',monospace;font-weight:700">{{ k.val }}</div>
+</div>
+</sc-for>
+<div style="display:flex;gap:3px;margin-top:auto"><div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:9px">{{ t.iAuto }}</div><div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:9px">{{ t.iSingle }}</div></div>
+</div>
+</div>
+<div style="display:flex;gap:4px;padding:0 5px 5px">
+<sc-for list="{{ scopeMeas }}" as="m" hint-placeholder-count="5">
+<div style="flex:1;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:2px 4px"><div style="font:8px/1.2 Tahoma;color:#555">{{ m.k }}</div><div style="font:11px/1.3 'Lucida Console',monospace">{{ m.v }}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="position:absolute;right:14px;top:12px;width:296px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),5px 5px 12px rgba(0,0,0,.45);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:19px;padding:0 3px 0 5px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 11px Tahoma">{{ t.iDmm }} · 6½<span style="margin-left:auto;width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></div>
+<div style="padding:6px">
+<div style="background:#0a1a12;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:8px 10px">
+<div style="display:flex;justify-content:space-between;font:9px/1 'Lucida Console',monospace;color:#2f7a55"><span>DC V · AUTO</span><span>TP1 → GND</span></div>
+<div style="font:700 38px/1.1 'Lucida Console',monospace;color:#48e08a;text-align:right;letter-spacing:.02em">3.9812</div>
+<div style="display:flex;justify-content:space-between;font:10px/1 'Lucida Console',monospace;color:#2f7a55"><span>MIN 0.0021</span><span>MAX 4.9903</span><span>V</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px">
+<sc-for list="{{ dmmModes }}" as="dm" hint-placeholder-count="8">
+<sc-if value="{{ dm.on }}"><div style="height:20px;background:var(--press);border:1px solid;border-color:var(--sunkBc);display:grid;place-items:center;font:700 10px 'Lucida Console',monospace">{{ dm.label }}</div></sc-if>
+<sc-if value="{{ dm.off }}"><div style="height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font:10px 'Lucida Console',monospace">{{ dm.label }}</div></sc-if>
+</sc-for>
+</div>
+<div style="margin-top:6px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px;font:10px/1.7 'Lucida Console',monospace">
+<div style="display:flex"><span>RANGE</span><span style="margin-left:auto">10 V</span></div>
+<div style="display:flex"><span>RATE</span><span style="margin-left:auto">10 rdg/s</span></div>
+<div style="display:flex"><span>REL</span><span style="margin-left:auto">OFF</span></div>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:220px;bottom:14px;width:520px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),5px 5px 12px rgba(0,0,0,.45);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:19px;padding:0 3px 0 5px;background:var(--cap);color:var(--capFg);font:700 11px Tahoma">{{ t.iLogic }} · 8CH<span style="margin-left:auto;width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></div>
+<div style="padding:5px;display:flex;gap:5px">
+<div style="width:44px;display:flex;flex-direction:column;gap:2px;font:9px/1 'Lucida Console',monospace">
+<sc-for list="{{ logicCh }}" as="lc" hint-placeholder-count="8">
+<div style="height:14px;display:flex;align-items:center;padding-left:3px;background:var(--press);border:1px solid;border-color:var(--lite) var(--shad) var(--shad) var(--lite)">{{ lc }}</div>
+</sc-for>
+</div>
+<div style="flex:1;background:#04160f;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<svg viewBox="0 0 440 130" width="100%" height="130" preserveAspectRatio="none" style="display:block"><rect width="440" height="130" fill="#04160f"></rect>
+<g fill="none" stroke="#48e08a" stroke-width="1.4">
+<polyline points="0,12 40,12 40,4 80,4 80,12 160,12 160,4 200,4 200,12 280,12 280,4 320,4 320,12 400,12 400,4 440,4"></polyline>
+<polyline points="0,28 20,28 20,20 60,20 60,28 100,28 100,20 140,20 140,28 220,28 220,20 260,20 260,28 340,28 340,20 380,20 380,28 440,28"></polyline>
+<polyline points="0,44 60,44 60,36 140,36 140,44 200,44 200,36 280,36 280,44 360,44 360,36 440,36"></polyline>
+<polyline points="0,60 100,60 100,52 180,52 180,60 300,60 300,52 400,52 400,60 440,60"></polyline>
+<polyline points="0,76 30,76 30,68 70,68 70,76 130,76 130,68 170,68 170,76 250,76 250,68 300,68 300,76 440,76"></polyline>
+<polyline points="0,92 0,84 50,84 50,92 90,92 90,84 190,84 190,92 240,92 240,84 330,84 330,92 440,92"></polyline>
+<polyline points="0,108 80,108 80,100 160,100 160,108 240,108 240,100 320,100 320,108 440,108"></polyline>
+<polyline points="0,124 110,124 110,116 220,116 220,124 330,124 330,116 440,116"></polyline>
+</g>
+<line x1="150" y1="0" x2="150" y2="130" stroke="#c9a227" stroke-width="1" stroke-dasharray="3 3"></line>
+</svg>
+</div>
+<div style="width:104px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px;font:9px/1.75 'Lucida Console',monospace">
+<div style="display:flex"><span>SR</span><span style="margin-left:auto">1 MS/s</span></div>
+<div style="display:flex"><span>DEPTH</span><span style="margin-left:auto">1 M</span></div>
+<div style="display:flex"><span>PROTO</span><span style="margin-left:auto">I²C</span></div>
+<div style="display:flex"><span>ADDR</span><span style="margin-left:auto">0x3C</span></div>
+<div style="display:flex"><span>TRIG</span><span style="margin-left:auto">START</span></div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isImport }}">
+<div style="position:absolute;inset:0;background:#12161b">
+<svg viewBox="0 0 1100 700" width="100%" height="100%" preserveAspectRatio="none" style="display:block;opacity:.3"><rect width="1100" height="700" fill="#12161b"></rect><rect width="1100" height="700" fill="url(#dots)"></rect></svg>
+<div style="position:absolute;inset:0;background:rgba(10,14,18,.45)"></div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:760px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),6px 6px 14px rgba(0,0,0,.5);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:20px;padding:0 3px 0 5px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 11px Tahoma">{{ t.imTitle }}<span style="margin-left:auto;display:flex;gap:2px"><span style="width:15px;height:13px;background:var(--minBg);border:1px solid;border-color:var(--minBc);border-radius:var(--ctlRad);color:var(--ctlFg);display:grid;place-items:center;font:9px/1 Tahoma">?</span><span style="width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></span></div>
+<div style="padding:10px 12px 12px">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+<span style="font-size:11px">{{ t.imFile }}</span>
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:20px;padding:0 6px;font:10px 'Lucida Console',monospace">D:\Projects\amp-v3\gerber\amp-v3.zip</div>
+<button style="width:84px;height:21px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bBrowse }}</button>
+</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1">
+<div style="font-size:10px;font-weight:700;margin-bottom:3px">{{ t.imFiles }}</div>
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:196px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1fr 96px 60px;background:var(--face);border-bottom:1px solid var(--shad);font-size:9px"><span style="padding:2px 5px;border-right:1px solid var(--shad)">{{ t.imColFile }}</span><span style="padding:2px 5px;border-right:1px solid var(--shad)">{{ t.imColLayer }}</span><span style="padding:2px 5px">{{ t.imColSize }}</span></div>
+<sc-for list="{{ importFiles }}" as="f" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:1fr 96px 60px;font:9px/1.9 'Lucida Console',monospace;border-bottom:1px solid #f2f0ed;padding:0 0">
+<span style="padding:0 5px;display:flex;gap:5px;align-items:center"><span style="width:9px;height:9px;background:#4f7cb0;border:1px solid #24405e"></span>{{ f.name }}</span>
+<span style="padding:0 5px;color:#3a3a3a">{{ f.layer }}</span><span style="padding:0 5px;color:#6a6a6a">{{ f.size }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="width:280px">
+<div style="font-size:10px;font-weight:700;margin-bottom:3px">{{ t.imPreview }}</div>
+<div style="background:#0e1013;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:196px">
+<svg viewBox="0 0 276 192" width="100%" height="100%" style="display:block"><rect width="276" height="192" fill="#0e1013"></rect>
+<rect x="26" y="20" width="224" height="152" rx="3" fill="#12311f" stroke="#2f6b47"></rect>
+<g fill="none" stroke="#c98b4b" stroke-width="2.4"><path d="M42 36h192"></path><path d="M42 156h192"></path><path d="M96 60h-38v56"></path><path d="M140 60h52v34"></path><path d="M96 116h24v28h72"></path></g>
+<g fill="none" stroke="#e6e6e0" stroke-width="1"><rect x="96" y="60" width="44" height="56"></rect><rect x="176" y="94" width="34" height="20"></rect><circle cx="216" cy="140" r="8"></circle></g>
+<g fill="#c98b4b"><circle cx="120" cy="46" r="3.4"></circle><circle cx="192" cy="130" r="3.4"></circle></g>
+<g font-family="'Lucida Console',monospace" font-size="7" fill="#6f8ba1"><text x="30" y="186">100.0 × 80.0 mm · 2L · 44 NETS · 22 PARTS</text></g>
+</svg>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:10px;margin-top:9px">
+<div style="flex:1;background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:6px 8px">
+<div style="font-size:10px;font-weight:700;margin-bottom:4px">{{ t.imOpts }}</div>
+<sc-for list="{{ importOpts }}" as="o" hint-placeholder-count="4">
+<label style="display:flex;align-items:center;gap:5px;font-size:10px;line-height:1.9">
+<sc-if value="{{ o.on }}"><span style="width:11px;height:11px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:8px/1 Tahoma">✓</span></sc-if>
+<sc-if value="{{ o.off }}"><span style="width:11px;height:11px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ o.label }}</label>
+</sc-for>
+</div>
+<div style="width:280px;background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:6px 8px;display:flex;flex-direction:column">
+<div style="font-size:10px;font-weight:700;margin-bottom:4px">{{ t.imFormats }}</div>
+<div style="font:9px/1.8 'Lucida Console',monospace;color:#2a2a2a">GERBER RS-274X · EXCELLON · KICAD<br>EAGLE .BRD · ALTIUM .PCBDOC<br>SPICE .CIR / .NET · ALTIUM NETLIST<br>IMAGE TRACE .PNG / .JPG → {{ t.imTrace }}</div>
+<div style="margin-top:auto;display:flex;align-items:center;gap:6px;font-size:10px"><span>{{ t.imProgress }}</span><div style="flex:1;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);overflow:hidden;position:relative"><div style="position:absolute;inset:1px;width:30%;background:repeating-linear-gradient(90deg,var(--sel) 0 8px,transparent 8px 10px);animation:bar 1.6s linear infinite"></div></div></div>
+</div>
+</div>
+<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:11px">
+<button style="min-width:88px;height:23px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">{{ t.bImport }}</button>
+<button style="min-width:88px;height:23px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bCancel }}</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLayers }}">
+<div style="position:absolute;inset:0;background:#12161b">
+<svg viewBox="0 0 1100 700" width="100%" height="100%" preserveAspectRatio="none" style="display:block;opacity:.34"><rect width="1100" height="700" fill="#12161b"></rect><rect width="1100" height="700" fill="url(#dots)"></rect><g stroke="#93a9bd" stroke-width="1.6" fill="none"><line x1="80" y1="90" x2="960" y2="90"></line><line x1="80" y1="610" x2="960" y2="610"></line><rect x="450" y="230" width="140" height="200"></rect></g></svg>
+<div style="position:absolute;inset:0;background:rgba(10,14,18,.4)"></div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),6px 6px 14px rgba(0,0,0,.5);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:20px;padding:0 3px 0 5px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 11px Tahoma">{{ t.lmTitle }}<span style="margin-left:auto;width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></div>
+<div style="padding:10px 12px 12px;display:flex;gap:10px">
+<div style="flex:1">
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:280px;overflow:hidden">
+<div style="display:grid;grid-template-columns:26px 26px 26px 1fr 62px 54px;background:var(--face);border-bottom:1px solid var(--shad);font-size:9px">
+<span style="padding:2px 0;text-align:center;border-right:1px solid var(--shad)">👁</span><span style="padding:2px 0;text-align:center;border-right:1px solid var(--shad)">🔒</span><span style="padding:2px 0;text-align:center;border-right:1px solid var(--shad)">■</span><span style="padding:2px 5px;border-right:1px solid var(--shad)">{{ t.lmName }}</span><span style="padding:2px 5px;border-right:1px solid var(--shad)">{{ t.lmObjects }}</span><span style="padding:2px 5px">{{ t.lmOpacity }}</span>
+</div>
+<sc-for list="{{ layers }}" as="ly" hint-placeholder-count="9">
+<sc-if value="{{ ly.sel }}">
+<div style="display:grid;grid-template-columns:26px 26px 26px 1fr 62px 54px;background:var(--sel);color:#fff;font-size:10px;line-height:2.1;border-bottom:1px solid #08204f">
+<span style="text-align:center">{{ ly.eye }}</span><span style="text-align:center">{{ ly.lock }}</span><span style="display:grid;place-items:center"><span style="width:10px;height:10px;background:#e8b04a;border:1px solid #fff"></span></span><span style="padding:0 5px">{{ ly.name }}</span><span style="padding:0 5px;font-family:'Lucida Console',monospace">{{ ly.n }}</span><span style="padding:0 5px;font-family:'Lucida Console',monospace">{{ ly.op }}</span>
+</div>
+</sc-if>
+<sc-if value="{{ ly.unsel }}">
+<div style="display:grid;grid-template-columns:26px 26px 26px 1fr 62px 54px;font-size:10px;line-height:2.1;border-bottom:1px solid #f1efec;color:#1a1a1a">
+<span style="text-align:center">{{ ly.eye }}</span><span style="text-align:center">{{ ly.lock }}</span><span style="display:grid;place-items:center"><span style="width:10px;height:10px;background:#8fa8bd;border:1px solid #55666f"></span></span><span style="padding:0 5px">{{ ly.name }}</span><span style="padding:0 5px;font-family:'Lucida Console',monospace;color:#555">{{ ly.n }}</span><span style="padding:0 5px;font-family:'Lucida Console',monospace;color:#555">{{ ly.op }}</span>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div style="display:flex;gap:4px;margin-top:6px">
+<sc-for list="{{ lmBtns }}" as="lb" hint-placeholder-count="5">
+<button style="flex:1;height:21px;font:10px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ lb }}</button>
+</sc-for>
+</div>
+</div>
+<div style="width:238px;display:flex;flex-direction:column;gap:7px">
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:7px 8px">
+<div style="font-size:10px;font-weight:700;margin-bottom:5px">{{ t.lmProps }}</div>
+<sc-for list="{{ lmFields }}" as="lf" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:10px;width:66px;color:#2a2a2a">{{ lf.k }}</span>
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:18px"><span style="padding:0 5px;font:10px/18px 'Lucida Console',monospace">{{ lf.v }}</span><span style="margin-left:auto;width:14px;height:16px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:6px">▼</span></div>
+</div>
+</sc-for>
+<div style="display:flex;align-items:center;gap:6px;margin-top:6px"><span style="font-size:10px;width:66px">{{ t.lmOpacity }}</span>
+<div style="flex:1;height:18px;position:relative;display:grid;align-items:center"><div style="height:4px;background:#c2beb8;border:1px solid;border-color:var(--sunkBc)"></div><div style="position:absolute;left:76%;width:9px;height:16px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1)"></div></div>
+<span style="font:10px 'Lucida Console',monospace;width:30px;text-align:right">80%</span>
+</div>
+</div>
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:7px 8px;flex:1">
+<div style="font-size:10px;font-weight:700;margin-bottom:5px">{{ t.lmColor }}</div>
+<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px">
+<div style="height:15px;border:1px solid #6a6a6a;background:#93a9bd"></div>
+<div style="height:15px;border:2px solid #000000;background:#e8b04a"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#c98b4b"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#5fd0a8"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#6fd3e0"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#b9cbdb"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#d94f3d"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#3a5fa0"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#e6e6e0"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#8fd0a8"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#c9a227"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#7a5fa8"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#2f6b47"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#4f7cb0"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#6f8ba1"></div>
+<div style="height:15px;border:1px solid #6a6a6a;background:#2b3440"></div>
+</div>
+<div style="margin-top:8px;font:9px/1.6 'Lucida Console',monospace;color:#333">{{ t.lmHint }}</div>
+</div>
+<div style="display:flex;gap:5px">
+<button style="flex:1;height:23px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">{{ t.bOk }}</button>
+<button style="flex:1;height:23px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bCancel }}</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSet }}">
+<div style="position:absolute;inset:0;background:#12161b">
+<svg viewBox="0 0 1100 700" width="100%" height="100%" preserveAspectRatio="none" style="display:block;opacity:.3"><rect width="1100" height="700" fill="#12161b"></rect><rect width="1100" height="700" fill="url(#dots)"></rect></svg>
+<div style="position:absolute;inset:0;background:rgba(10,14,18,.42)"></div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:620px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),6px 6px 14px rgba(0,0,0,.5);border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="display:flex;align-items:center;height:20px;padding:0 3px 0 5px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 11px Tahoma">{{ t.setTitle }}<span style="margin-left:auto;width:15px;height:13px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:9px/1 Tahoma">✕</span></div>
+<div style="padding:8px 10px 10px">
+<div style="display:flex;gap:2px;align-items:flex-end;padding-left:2px">
+<sc-for list="{{ setTabs }}" as="st" hint-placeholder-count="5">
+<sc-if value="{{ st.on }}"><div onClick="{{ st.go }}" style="padding:3px 11px 4px;background:var(--face);border:1px solid;border-color:var(--lite) var(--shad) transparent var(--lite);border-radius:var(--rad) var(--rad) 0 0;font:700 11px Tahoma;position:relative;top:1px;z-index:2">{{ st.label }}</div></sc-if>
+<sc-if value="{{ st.off }}"><div onClick="{{ st.go }}" style="padding:2px 11px 3px;background:var(--face2);border:1px solid;border-color:var(--tabBc);border-radius:var(--rad) var(--rad) 0 0;font:11px Tahoma;color:#3a3a3a">{{ st.label }}</div></sc-if>
+</sc-for>
+</div>
+<div style="border:1px solid;border-color:var(--lite) var(--shad) var(--shad) var(--lite);box-shadow:inset -1px -1px 0 #d6d3ce;padding:12px;background:var(--face)">
+<sc-if value="{{ tabTheme }}">
+<div style="display:flex;gap:14px">
+<div style="flex:1">
+<div style="font-weight:700;font-size:11px;margin-bottom:7px">{{ t.setThemeQ }}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+
+<div onClick="{{ tm.setme }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #404040;background:#d6d3ce">
+<div style="height:11px;background:linear-gradient(90deg,#0a246a 0%,#2f5f9e 62%,#8fb7e0 100%)"></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid;border-color:#808080 #ffffff #ffffff #808080"></span><span style="width:22px;height:11px;background:#d6d3ce;border:1px solid;border-color:#ffffff #404040 #404040 #ffffff"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.meOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.meOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.meName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.meDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setxp }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #0a4bb0;border-radius:6px 6px 0 0;overflow:hidden;background:#ece9d8">
+<div style="height:11px;background:linear-gradient(180deg,#1a86ec 0%,#4ba6f8 20%,#0a5cd0 100%)"></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid #7f9db9"></span><span style="width:22px;height:11px;background:#ece9d8;border:1px solid #003c74;border-radius:3px"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.xpOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.xpOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.xpName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.xpDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setsilver }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #6f6f7d;border-radius:6px 6px 0 0;overflow:hidden;background:#e9e9ee">
+<div style="height:11px;background:linear-gradient(180deg,#9c9cb2 0%,#c2c2d2 20%,#6e6e86 100%)"></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid #9a9aa6"></span><span style="width:22px;height:11px;background:#e9e9ee;border:1px solid #7b7b88;border-radius:3px"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.silverOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.silverOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.silverName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.silverDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setmac }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #000000;border-radius:4px 4px 0 0;overflow:hidden;background:#dcdcdc">
+<div style="height:11px;background:repeating-linear-gradient(180deg,#f2f2f2 0 1px,#c4c4c4 1px 2px);display:flex;align-items:center;padding:0 2px"><span style="width:7px;height:7px;background:#dcdcdc;border:1px solid #000"></span></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid #5a5a5a"></span><span style="width:22px;height:11px;background:#dcdcdc;border:1px solid #000;border-radius:4px"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.macOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.macOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.macName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.macDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setmacos }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #cfcfd6;border-radius:9px 9px 0 0;overflow:hidden;background:#f2f2f4">
+<div style="height:12px;background:linear-gradient(180deg,#f7f7f9,#e8e8ec);display:flex;align-items:center;gap:2px;padding:0 3px"><span style="width:5px;height:5px;border-radius:50%;background:#ff5f57"></span><span style="width:5px;height:5px;border-radius:50%;background:#febc2e"></span><span style="width:5px;height:5px;border-radius:50%;background:#28c840"></span></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid #d2d2d8;border-radius:4px"></span><span style="width:22px;height:11px;background:#fff;border:1px solid #d0d0d6;border-radius:5px"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.macosOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.macosOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.macosName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.macosDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setaqua }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #7ba0c8;border-radius:11px 11px 0 0;overflow:hidden;background:linear-gradient(180deg,#fbfdff,#dce8f6)">
+<div style="height:13px;background:linear-gradient(180deg,#a8dcff 0%,#57b0f7 42%,#1476e2 52%,#3f9df4 78%,#8fd0ff 100%);display:flex;align-items:center;gap:2px;padding:0 3px"><span style="width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#ffd9d2,#d2311c)"></span><span style="width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff2cf,#d99106)"></span><span style="width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#dcffd4,#1c9e2a)"></span></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid #7f9dc0;border-radius:5px;box-shadow:inset 0 2px 3px rgba(30,70,130,.22)"></span><span style="width:22px;height:11px;background:linear-gradient(180deg,#fbfdff,#dce8f6);border:1px solid #8aa9cd;border-radius:6px;box-shadow:inset 0 1px 0 #fff"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.aquaOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.aquaOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.aquaName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.aquaDesc }}</div>
+</div>
+</div>
+
+<div onClick="{{ tm.setclassic }}" style="display:flex;gap:7px;padding:6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)">
+<div style="width:84px;flex:none;border:1px solid #404040;background:#d4d0c8">
+<div style="height:11px;background:#0a246a"></div>
+<div style="padding:5px 4px;display:flex;gap:3px;align-items:center"><span style="flex:1;height:11px;background:#fff;border:1px solid;border-color:#808080 #ffffff #ffffff #808080"></span><span style="width:22px;height:11px;background:#d4d0c8;border:1px solid;border-color:#ffffff #404040 #404040 #ffffff"></span></div>
+</div>
+<div style="min-width:0">
+<label style="display:flex;align-items:center;gap:5px;font:700 10px Tahoma">
+<sc-if value="{{ tm.classicOn }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ tm.classicOff }}"><span style="width:11px;height:11px;flex:none;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ tm.classicName }}</label>
+<div style="font-size:9px;line-height:1.4;color:#3a3a3a;margin-top:3px">{{ tm.classicDesc }}</div>
+</div>
+</div>
+
+</div>
+<div style="height:1px;background:var(--shad);box-shadow:0 1px 0 var(--lite);margin:10px 0 8px"></div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="font-size:11px;width:104px">{{ t.setThemeFont }}</span>
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:19px"><span style="padding:0 6px;font:10px/19px Tahoma">Tahoma 8 pt</span><span style="margin-left:auto;width:15px;height:17px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:7px">▼</span></div>
+</div>
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:2"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:9px/1 Tahoma">✓</span>{{ t.setThemeAnim }}</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:2"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:9px/1 Tahoma">✓</span>{{ t.setThemeShadow }}</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:2"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:9px/1 Tahoma">✓</span>{{ t.setThemeApplyAll }}</label>
+</div>
+<div style="width:250px">
+<div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ t.setPreview }}</div>
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:0;border-radius:var(--tbrad) var(--tbrad) 0 0;overflow:hidden">
+<div style="height:17px;background:var(--tb2);color:#fff;font:700 10px/17px Tahoma;padding:0 4px;display:flex"><span>{{ t.setPvTitle }}</span><span style="margin-left:auto;width:13px;height:11px;margin-top:3px;background:var(--closeBg);border:1px solid;border-color:var(--closeBc);border-radius:var(--ctlRad);color:var(--closeFg);display:grid;place-items:center;font:8px/1 Tahoma">✕</span></div>
+<div style="padding:7px">
+<div style="font-size:11px;margin-bottom:5px">{{ t.setPvBody }}</div>
+<div style="font:10px/1.7 'Lucida Console',monospace;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px">
+<div style="display:flex"><span>{{ t.setPvV }}</span><span style="margin-left:auto">4.981 V</span></div>
+<div style="display:flex"><span>{{ t.setPvI }}</span><span style="margin-left:auto">9.41 mA</span></div>
+</div>
+<div style="display:flex;gap:4px;margin-top:7px"><div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bOk }}</div><div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bCancel }}</div></div>
+</div>
+</div>
+<div style="margin-top:8px;font:9px/1.6 Tahoma;color:#3a3a3a">{{ t.setThemeNote }}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ tabLang }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:14px">
+<div style="flex:1">
+<div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ t.setLangQ }}</div>
+<sc-for list="{{ langOpts }}" as="lo" hint-placeholder-count="3">
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:2.1">
+<sc-if value="{{ lo.on }}"><span style="width:12px;height:12px;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#000"></span></span></sc-if>
+<sc-if value="{{ lo.off }}"><span style="width:12px;height:12px;border-radius:50%;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ lo.label }}</label>
+</sc-for>
+<div style="height:1px;background:var(--shad);box-shadow:0 1px 0 var(--lite);margin:9px 0 8px"></div>
+<sc-for list="{{ setFields }}" as="sf" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="font-size:11px;width:104px">{{ sf.k }}</span>
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:19px"><span style="padding:0 6px;font:10px/19px Tahoma">{{ sf.v }}</span><span style="margin-left:auto;width:15px;height:17px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);display:grid;place-items:center;font-size:7px">▼</span></div>
+</div>
+</sc-for>
+<sc-for list="{{ setChecks }}" as="sc2" hint-placeholder-count="3">
+<label style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:2">
+<sc-if value="{{ sc2.on }}"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);display:grid;place-items:center;font:9px/1 Tahoma">✓</span></sc-if>
+<sc-if value="{{ sc2.off }}"><span style="width:12px;height:12px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh)"></span></sc-if>
+{{ sc2.label }}</label>
+</sc-for>
+</div>
+<div style="width:250px">
+<div style="font-weight:700;font-size:11px;margin-bottom:6px">{{ t.setPreview }}</div>
+<div style="background:var(--face);border:1px solid;border-color:var(--sunkBc);padding:0">
+<div style="height:17px;background:var(--tb2);border-radius:var(--tbrad) var(--tbrad) 0 0;color:var(--tbFg);font:700 10px/17px Tahoma;padding:0 4px">{{ t.setPvTitle }}</div>
+<div style="padding:7px">
+<div style="font-size:11px;margin-bottom:5px">{{ t.setPvBody }}</div>
+<div style="font:10px/1.7 'Lucida Console',monospace;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px">
+<div style="display:flex"><span>{{ t.setPvV }}</span><span style="margin-left:auto">4.981 V</span></div>
+<div style="display:flex"><span>{{ t.setPvI }}</span><span style="margin-left:auto">9.41 mA</span></div>
+<div style="display:flex"><span>{{ t.setPvF }}</span><span style="margin-left:auto">1.442 kHz</span></div>
+</div>
+<div style="display:flex;gap:4px;margin-top:7px"><div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bRun }}</div><div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bStop }}</div></div>
+</div>
+</div>
+<div style="margin-top:8px;font:9px/1.6 Tahoma;color:#3a3a3a">{{ t.setNote }}</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px">
+<button style="min-width:82px;height:23px;font:700 11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh),0 0 0 1px #000;cursor:default">{{ t.bOk }}</button>
+<button style="min-width:82px;height:23px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bCancel }}</button>
+<button style="min-width:82px;height:23px;font:11px Tahoma;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh);cursor:default">{{ t.bApply }}</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+<div style="width:278px;flex:none;display:flex;flex-direction:column;border-left:1px solid var(--shad);box-shadow:1px 0 0 var(--lite) inset;background:var(--face)">
+<div style="display:flex;align-items:center;height:19px;padding:0 4px;background:var(--cap);color:var(--capFg);font-weight:700;font-size:10px">{{ t.pnLayers }}<span style="margin-left:auto;font-size:9px">▾</span></div>
+<div style="margin:4px;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:184px;overflow:hidden">
+<sc-for list="{{ layers }}" as="ly" hint-placeholder-count="9">
+<sc-if value="{{ ly.sel }}">
+<div style="display:flex;align-items:center;gap:4px;padding:2px 4px;background:var(--sel);color:#fff;font-size:10px"><span style="width:11px;text-align:center">{{ ly.eye }}</span><span style="width:11px;text-align:center">{{ ly.lock }}</span><span style="width:9px;height:9px;background:#e8b04a;border:1px solid #fff;flex:none"></span>{{ ly.name }}<span style="margin-left:auto;font:9px 'Lucida Console',monospace;opacity:.85">{{ ly.n }}</span></div>
+</sc-if>
+<sc-if value="{{ ly.unsel }}">
+<div style="display:flex;align-items:center;gap:4px;padding:2px 4px;font-size:10px;color:#1a1a1a;border-bottom:1px solid #f4f2ef"><span style="width:11px;text-align:center;color:#4a4a4a">{{ ly.eye }}</span><span style="width:11px;text-align:center;color:#4a4a4a">{{ ly.lock }}</span><span style="width:9px;height:9px;background:#8fa8bd;border:1px solid #55666f;flex:none"></span>{{ ly.name }}<span style="margin-left:auto;font:9px 'Lucida Console',monospace;color:#777">{{ ly.n }}</span></div>
+</sc-if>
+</sc-for>
+</div>
+<div style="display:flex;gap:3px;padding:0 4px 5px">
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:14px;line-height:1">+</div>
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:14px;line-height:1">−</div>
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:9px">▲</div>
+<div style="flex:1;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:9px">▼</div>
+<div style="flex:2;height:19px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.lmMore }}</div>
+</div>
+
+<div style="display:flex;align-items:center;height:19px;padding:0 4px;background:var(--cap);color:var(--capFg);font-weight:700;font-size:10px">{{ t.pnProps }}<span style="margin-left:auto;font-size:9px">▾</span></div>
+<div style="margin:4px;padding:5px 6px;background:var(--face);border:1px solid;border-color:var(--sunkBc)">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+<div style="width:44px;height:34px;background:#12161b;border:1px solid var(--dark);display:grid;place-items:center"><svg viewBox="-16 -10 32 20" width="38" height="24" style="color:#e8b04a"><use href="#resH" transform="translate(-12,0)"></use></svg></div>
+<div><div style="font:700 12px 'Lucida Console',monospace">R2</div><div style="font-size:10px;color:#333">{{ t.pKindRes }}</div></div>
+</div>
+<sc-for list="{{ propFields }}" as="pf" hint-placeholder-count="8">
+<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+<span style="font-size:10px;width:76px;color:#2a2a2a">{{ pf.k }}</span>
+<div style="flex:1;display:flex;align-items:center;background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);height:18px"><span style="padding:0 5px;font:10px/18px 'Lucida Console',monospace">{{ pf.v }}</span></div>
+</div>
+</sc-for>
+</div>
+<div style="margin:0 4px 4px;padding:5px 6px;background:var(--face);border:1px solid;border-color:var(--sunkBc);flex:1;min-height:0;overflow:hidden">
+<div style="font-size:10px;font-weight:700;margin-bottom:4px">{{ t.pnSim }}</div>
+<div style="background:#fff;border:1px solid;border-color:var(--sunkBc);box-shadow:var(--sunkSh);padding:3px 5px;font:10px/1.75 'Lucida Console',monospace">
+<sc-for list="{{ simRows }}" as="sr" hint-placeholder-count="6">
+<div style="display:flex;border-bottom:1px solid #f3f1ee"><span style="color:#3a3a3a">{{ sr.k }}</span><span style="margin-left:auto;color:#12161b">{{ sr.v }}</span></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:4px;margin-top:6px">
+<div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bProbe }}</div>
+<div style="flex:1;height:20px;background:var(--face);border:1px solid;border-color:var(--raiseBc);border-radius:var(--rad);box-shadow:var(--raiseSh1);display:grid;place-items:center;font-size:10px">{{ t.bScope }}</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="display:flex;align-items:stretch;gap:2px;height:22px;padding:1px 2px;border-top:1px solid var(--lite);box-shadow:0 -1px 0 var(--shad);flex:none">
+<sc-for list="{{ status }}" as="s" hint-placeholder-count="7">
+<div style="padding:0 7px;display:flex;align-items:center;background:var(--face);border:1px solid;border-color:var(--sunkBc);font-size:10px;white-space:nowrap">{{ s }}</div>
+</sc-for>
+<div style="flex:1;background:var(--face);border:1px solid;border-color:var(--sunkBc)"></div>
+<sc-if value="{{ running }}"><div style="padding:0 8px;display:flex;align-items:center;gap:5px;background:var(--face);border:1px solid;border-color:var(--sunkBc);font:700 10px Tahoma"><span style="width:7px;height:7px;border-radius:50%;background:#1c7a3e;box-shadow:0 0 4px #34d17a;animation:blink 1.2s infinite"></span>{{ t.stRun }}</div></sc-if>
+<sc-if value="{{ notRunning }}"><div style="padding:0 8px;display:flex;align-items:center;gap:5px;background:var(--face);border:1px solid;border-color:var(--sunkBc);font-size:10px"><span style="width:7px;height:7px;border-radius:50%;background:#7a7a7a"></span>{{ t.stIdle }}</div></sc-if>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1480,&quot;height&quot;:1000},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;start&quot;,&quot;schematic&quot;,&quot;library&quot;,&quot;breadboard&quot;,&quot;sim&quot;,&quot;instruments&quot;,&quot;import&quot;,&quot;pcb&quot;,&quot;layers&quot;,&quot;settings&quot;],&quot;default&quot;:&quot;schematic&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Mockup&quot;},&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;th&quot;,&quot;en&quot;],&quot;default&quot;:&quot;th&quot;,&quot;tsType&quot;:&quot;'th' | 'en'&quot;,&quot;section&quot;:&quot;Mockup&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;me&quot;,&quot;xp&quot;,&quot;silver&quot;,&quot;mac&quot;,&quot;macos&quot;,&quot;aqua&quot;,&quot;classic&quot;],&quot;default&quot;:&quot;me&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Mockup&quot;},&quot;netLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Schematic&quot;}}">
+class Component extends DCLogic {
+  state = {};
+  lang() { return this.state.lang ?? this.props.lang ?? 'th'; }
+  scr() { return this.state.screen ?? this.props.screen ?? 'schematic'; }
+  thm() { return this.state.theme ?? this.props.theme ?? 'me'; }
+  tab() { return this.state.setTab ?? 1; }
+  themeTokens() {
+    return {
+      me: {},
+      xp: { '--face': '#ece9d8', '--face2': 'linear-gradient(180deg,#f8f7ef,#e2dfcb)', '--press': '#dcd9c6', '--lite': '#ffffff', '--shad': '#aca899', '--dark': '#8e8b7d',
+        '--raiseBc': '#003c74', '--sunkBc': '#7f9db9', '--tabBc': '#003c74',
+        '--raiseSh': 'inset 0 1px 0 #ffffff,inset 0 -7px 7px -7px rgba(0,0,0,.13)', '--raiseSh1': 'inset 0 1px 0 #ffffff', '--sunkSh': 'none',
+        '--tb': 'linear-gradient(180deg,#1a86ec 0%,#4ba6f8 7%,#1273e2 34%,#0a5cd0 72%,#1272e0 100%)',
+        '--tb2': 'linear-gradient(180deg,#1a86ec 0%,#4ba6f8 7%,#1273e2 34%,#0a5cd0 72%,#1272e0 100%)',
+        '--cap': 'linear-gradient(180deg,#82abec,#4877c9)', '--sel': '#316ac5', '--rad': '3px', '--tbrad': '8px',
+        '--frame': '#0a5cd0', '--frameBc': '#0a4bb0',
+        '--closeBg': 'linear-gradient(180deg,#f4977f,#cf4326)', '--closeFg': '#ffffff', '--closeBc': '#9c3417',
+        '--ctlRad': '3px', '--minBg': 'linear-gradient(180deg,#7fb2ef,#2b6fd0)', '--minBc': '#1d55a8', '--maxBg': 'linear-gradient(180deg,#7fb2ef,#2b6fd0)', '--maxBc': '#1d55a8', '--ctlFg': '#ffffff',
+        '--desk': 'linear-gradient(180deg,#2f6fc4 0%,#5b9de0 55%,#8cc3e8 100%)' },
+      silver: { '--face': '#e9e9ee', '--face2': 'linear-gradient(180deg,#fbfbfd,#dcdce4)', '--press': '#d6d6de', '--lite': '#ffffff', '--shad': '#a8a8b2', '--dark': '#8b8b96',
+        '--raiseBc': '#7b7b88', '--sunkBc': '#9a9aa6', '--tabBc': '#7b7b88',
+        '--raiseSh': 'inset 0 1px 0 #ffffff,inset 0 -7px 7px -7px rgba(0,0,0,.13)', '--raiseSh1': 'inset 0 1px 0 #ffffff', '--sunkSh': 'none',
+        '--tb': 'linear-gradient(180deg,#9c9cb2 0%,#c2c2d2 8%,#8e8ea6 38%,#6e6e86 76%,#9494ac 100%)',
+        '--tb2': 'linear-gradient(180deg,#9c9cb2 0%,#c2c2d2 8%,#8e8ea6 38%,#6e6e86 76%,#9494ac 100%)',
+        '--cap': 'linear-gradient(180deg,#b0b0c2,#7e7e94)', '--sel': '#5c6ea8', '--rad': '3px', '--tbrad': '8px',
+        '--frame': '#8b8b9a', '--frameBc': '#6f6f7d',
+        '--closeBg': 'linear-gradient(180deg,#f4977f,#cf4326)', '--closeFg': '#ffffff', '--closeBc': '#9c3417',
+        '--ctlRad': '3px', '--minBg': 'linear-gradient(180deg,#c8c8d6,#8e8ea2)', '--minBc': '#75758a', '--maxBg': 'linear-gradient(180deg,#c8c8d6,#8e8ea2)', '--maxBc': '#75758a', '--ctlFg': '#ffffff',
+        '--desk': 'linear-gradient(180deg,#4a5361 0%,#737d8c 60%,#9aa3b0 100%)' },
+      aqua: { '--face': 'linear-gradient(180deg,#fbfdff,#dce8f6)', '--face2': 'linear-gradient(180deg,#eaf3fd,#c8dcf2)', '--press': 'linear-gradient(180deg,#bfd8f4,#9dc0e8)',
+        '--lite': '#ffffff', '--shad': '#9db6d4', '--dark': '#6f92bb',
+        '--raiseBc': '#8aa9cd', '--sunkBc': '#7f9dc0', '--tabBc': '#8aa9cd',
+        '--raiseSh': 'inset 0 1px 0 rgba(255,255,255,.95),inset 0 6px 6px -6px #ffffff,inset 0 -7px 8px -7px rgba(20,70,140,.28),0 1px 2px rgba(20,60,120,.18)',
+        '--raiseSh1': 'inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(20,60,120,.16)',
+        '--sunkSh': 'inset 0 2px 3px rgba(30,70,130,.22)',
+        '--tb': 'linear-gradient(180deg,#a8dcff 0%,#57b0f7 42%,#1476e2 52%,#3f9df4 78%,#8fd0ff 100%)',
+        '--tb2': 'linear-gradient(180deg,#a8dcff 0%,#57b0f7 42%,#1476e2 52%,#3f9df4 78%,#8fd0ff 100%)',
+        '--cap': 'linear-gradient(180deg,#bfe6ff 0%,#6fbdf9 45%,#2f8ce8 55%,#67baf7 100%)',
+        '--tbFg': '#ffffff', '--capFg': '#ffffff', '--sel': '#1f6fe0', '--rad': '9px', '--tbrad': '13px',
+        '--frame': 'linear-gradient(180deg,#cfe6fb,#a9c9ea)', '--frameBc': '#7ba0c8',
+        '--closeBg': 'radial-gradient(circle at 35% 28%,#ffd9d2 0%,#ff6a58 45%,#d2311c 100%)', '--closeFg': 'rgba(0,0,0,0)', '--closeBc': '#a8291a',
+        '--ctlRad': '50%', '--ctlFg': 'rgba(0,0,0,0)',
+        '--minBg': 'radial-gradient(circle at 35% 28%,#fff2cf 0%,#ffc23c 45%,#d99106 100%)', '--minBc': '#a86f05',
+        '--maxBg': 'radial-gradient(circle at 35% 28%,#dcffd4 0%,#57d95c 45%,#1c9e2a 100%)', '--maxBc': '#157a20',
+        '--desk': 'radial-gradient(130% 110% at 25% 0%,#8fd8ff 0%,#37a0ef 35%,#0d5fc4 70%,#063f8f 100%)' },
+      macos: { '--face': '#f2f2f4', '--face2': '#e6e6ea', '--press': '#dcdce2', '--lite': '#ffffff', '--shad': '#d2d2d8', '--dark': '#c2c2c9',
+        '--raiseBc': '#d0d0d6', '--sunkBc': '#c9c9d1', '--tabBc': '#d0d0d6',
+        '--raiseSh': 'inset 0 1px 0 #ffffff,0 1px 1px rgba(0,0,0,.06)', '--raiseSh1': 'inset 0 1px 0 #ffffff,0 1px 1px rgba(0,0,0,.05)',
+        '--sunkSh': 'inset 0 1px 2px rgba(0,0,0,.07)',
+        '--tb': 'linear-gradient(180deg,#f7f7f9,#e8e8ec)', '--tb2': 'linear-gradient(180deg,#f7f7f9,#e8e8ec)',
+        '--cap': 'linear-gradient(180deg,#eeeef1,#e2e2e7)',
+        '--tbFg': '#1d1d1f', '--capFg': '#3a3a3e', '--sel': '#0a6cff', '--rad': '6px', '--tbrad': '11px',
+        '--frame': '#f2f2f4', '--frameBc': '#cfcfd6',
+        '--closeBg': '#ff5f57', '--closeFg': 'rgba(0,0,0,0)', '--closeBc': '#e0443e',
+        '--ctlRad': '50%', '--ctlFg': 'rgba(0,0,0,0)', '--minBg': '#febc2e', '--minBc': '#e0a021', '--maxBg': '#28c840', '--maxBc': '#1eaa35',
+        '--desk': 'linear-gradient(160deg,#2b3a6b 0%,#5b4a8f 45%,#8c5c96 75%,#c98a7a 100%)' },
+      mac: { '--face': '#dcdcdc', '--face2': '#c8c8c8', '--press': '#bdbdbd', '--lite': '#ffffff', '--shad': '#909090', '--dark': '#000000',
+        '--raiseBc': '#000000', '--sunkBc': '#5a5a5a', '--tabBc': '#000000',
+        '--raiseSh': 'inset 0 1px 0 #ffffff,inset -1px -1px 0 #a4a4a4', '--raiseSh1': 'inset 0 1px 0 #ffffff,inset -1px -1px 0 #a4a4a4',
+        '--sunkSh': 'inset 1px 1px 0 #a8a8a8',
+        '--tb': 'repeating-linear-gradient(180deg,#f2f2f2 0 1px,#c4c4c4 1px 2px)',
+        '--tb2': 'repeating-linear-gradient(180deg,#f2f2f2 0 1px,#c4c4c4 1px 2px)',
+        '--cap': 'repeating-linear-gradient(180deg,#e4e4e4 0 1px,#b8b8b8 1px 2px)',
+        '--tbFg': '#000000', '--capFg': '#000000', '--sel': '#2f5fa8', '--rad': '5px', '--tbrad': '5px',
+        '--frame': '#dcdcdc', '--frameBc': '#000000',
+        '--closeBg': '#dcdcdc', '--closeFg': '#000000', '--closeBc': '#000000',
+        '--minBg': '#dcdcdc', '--minBc': '#000000', '--maxBg': '#dcdcdc', '--maxBc': '#000000', '--ctlRad': '2px',
+        '--desk': 'linear-gradient(180deg,#8d99a6 0%,#6d7885 55%,#525b66 100%)' },
+      classic: { '--face': '#d4d0c8', '--face2': '#bfbbb3', '--press': '#c8c4bc',
+        '--raiseSh': 'inset -1px -1px 0 #808080,inset 1px 1px 0 #efece6',
+        '--tb': 'linear-gradient(90deg,#0a246a,#0a246a)', '--tb2': 'linear-gradient(90deg,#0a246a,#0a246a)',
+        '--cap': 'linear-gradient(90deg,#0a246a,#0a246a)', '--frame': '#d4d0c8', '--closeBg': '#d4d0c8',
+        '--desk': '#3a6ea5' }
+    };
+  }
+  applyTheme() {
+    const el = this.rootEl; if (!el) return;
+    const all = this.themeTokens(), keys = new Set();
+    for (const n in all) for (const k in all[n]) keys.add(k);
+    const T = all[this.thm()] || {};
+    keys.forEach(k => T[k] ? el.style.setProperty(k, T[k]) : el.style.removeProperty(k));
+  }
+  componentDidMount() { this.applyTheme(); }
+  componentDidUpdate() { this.applyTheme(); }
+
+  renderVals() {
+    const lang = this.lang(), i = lang === 'th' ? 0 : 1, s = this.scr();
+    const D = {
+      winTitle: ['555-astable-reg.ebp — แผ่นที่ 1', '555-astable-reg.ebp — Sheet 1'],
+      nvStart: ['เริ่มโปรแกรม', 'Start'], nvSchem: ['ออกแบบวงจร', 'Schematic'], nvLib: ['คลังอุปกรณ์', 'Library'],
+      nvBread: ['บอร์ดทดลอง', 'Breadboard'], nvSim: ['รันซิม', 'Simulate'], nvInst: ['เครื่องมือวัด', 'Instruments'],
+      nvImport: ['นำเข้าลายวงจร', 'Import'], nvPcb: ['ลายปริ๊น + AI', 'PCB + AI'], nvLayers: ['เลเยอร์', 'Layers'], nvSet: ['ตั้งค่า', 'Settings'],
+      mFile: ['ไฟล์', 'File'], mEdit: ['แก้ไข', 'Edit'], mView: ['มุมมอง', 'View'], mPlace: ['วางอุปกรณ์', 'Place'],
+      mSim: ['ซิมูเลต', 'Simulate'], mTools: ['เครื่องมือ', 'Tools'], mBoard: ['บอร์ด', 'Board'], mWin: ['หน้าต่าง', 'Window'], mHelp: ['ช่วยเหลือ', 'Help'],
+      tbGrid: ['กริด', 'Grid'], tbZoom: ['ย่อ/ขยาย', 'Zoom'],
+      bRun: ['เล่น', 'Play'], bPause: ['พัก', 'Pause'], bStop: ['หยุด', 'Stop'], bStep: ['ทีละสเต็ป', 'Step'],
+      bNew: ['สร้างใหม่', 'New project'], bOpen: ['เปิด...', 'Open...'], bImport: ['นำเข้า...', 'Import...'],
+      bOk: ['ตกลง', 'OK'], bCancel: ['ยกเลิก', 'Cancel'], bApply: ['นำไปใช้', 'Apply'], bBrowse: ['เลือกไฟล์...', 'Browse...'],
+      bProbe: ['จับสัญญาณ', 'Probe'], bScope: ['ส่งเข้าสโคป', 'To scope'],
+      pnLib: ['คลังอุปกรณ์ · COMPONENT LIBRARY', 'COMPONENT LIBRARY'],
+      pnLayers: ['เลเยอร์ · LAYERS', 'LAYERS'], pnProps: ['คุณสมบัติ · PROPERTIES', 'PROPERTIES'], pnSim: ['ผลซิมูเลชันของ R2', 'Simulation result · R2'],
+      libSearch: ['ค้นหาอุปกรณ์ / เบอร์ไอซี', 'Search part or MPN'], libSub: ['PASSIVE › ตัวต้านทาน & ตัวเก็บประจุ', 'PASSIVE › Resistors & capacitors'],
+      libPlace: ['วางลงวงจร', 'Place'], libFav: ['ที่ใช้บ่อย', 'Favorites'], libSearchBtn: ['ค้นหา', 'Search'],
+      libSort: ['เรียงตาม', 'Sort by'], libSortVal: ['ใช้บ่อยที่สุด', 'Most used'], libDatasheet: ['ดาต้าชีต · DATASHEET', 'DATASHEET'], libPdf: ['เปิด PDF', 'Open PDF'],
+      sTitle: ['ยินดีต้อนรับ', 'Welcome'],
+      sSub: ['โปรแกรมทดลองวงจรอิเล็กทรอนิกส์ระดับมืออาชีพ — ออกแบบ วางบนบอร์ดทดลอง จำลองการทำงานด้วยเครื่องมือวัดจริง และทำลายปริ๊นต่อได้ในไฟล์เดียว', 'Professional electronics workbench — schematic capture, breadboard prototyping, SPICE-accurate simulation with real instruments, and PCB layout in one project file.'],
+      sVer: ['ลิขสิทธิ์ใช้งานเชิงพาณิชย์ · 1 เครื่อง', 'Commercial licence · 1 seat'],
+      sRecent: ['โปรเจกต์ล่าสุด', 'Recent projects'], sTemplates: ['เทมเพลตวงจร', 'Circuit templates'],
+      sColName: ['ชื่อไฟล์', 'Name'], sColKind: ['ชนิด', 'Type'], sColDate: ['แก้ไขเมื่อ', 'Modified'],
+      sShowStart: ['แสดงหน้านี้เมื่อเปิดโปรแกรม', 'Show this page at startup'],
+      tbSchem: ['ผังวงจร', 'Schematic'], tbBread: ['บอร์ดทดลอง 2D', 'Breadboard 2D'], tbPcb: ['ลายปริ๊น', 'PCB'], tbSpice: ['เนตลิสต์', 'Netlist'],
+      sheetOf: ['แผ่น 1 / 3 · A3', 'Sheet 1 / 3 · A3'],
+      iScope: ['ออสซิลโลสโคป', 'Oscilloscope'], iDmm: ['มัลติมิเตอร์', 'Multimeter'], iLogic: ['โลจิกอนาไลเซอร์', 'Logic analyzer'],
+      iAuto: ['ออโต้', 'Auto'], iCursor: ['เคอร์เซอร์', 'Cursor'], iSingle: ['ช็อตเดียว', 'Single'],
+      bbLegend: ['ตารางจุดต่อและค่าที่วัดได้', 'TIE-POINT / MEASUREMENT TABLE'],
+      bbBoards: ['บอร์ดทดลองที่ติดตั้ง', 'INSTALLED BOARDS'], bbActive: ['(กำลังใช้)', '(ACTIVE)'],
+      pcbAi: ['วางอุปกรณ์อัตโนมัติด้วย AI', 'AI auto-place & route'],
+      pcbAiDesc: ['AI อ่านผังวงจรแล้วจัดวางอุปกรณ์ เดินลายทองแดง และเว้นระยะความร้อน/แรงดันสูงให้อัตโนมัติ ก่อนส่งออกเป็นไฟล์ Gerber สำหรับสั่งทำแผ่นวงจร', 'The AI reads the schematic, places parts, routes copper, and holds thermal and high-voltage clearances before exporting Gerbers for fabrication.'],
+      pcbGoal: ['เป้าหมายการจัดวาง', 'Placement goals'], pcbTrace: ['ความกว้างลาย', 'Trace width'], pcbVia: ['เวีย (นอก/ใน)', 'Via (pad/drill)'],
+      pcbPlacing: ['กำลังจัดวาง...', 'Placing...'], pcbAuto: ['จัดวาง + เดินลาย', 'Auto-place & route'],
+      pcbCheck: ['รายการตรวจ DRC', 'DRC check'], pcbVal: ['ผล', 'Result'],
+      pcbGerber: ['ส่งออก Gerber', 'Export Gerber'], pcbPrint: ['พิมพ์ลายปริ๊น 1:1', 'Print 1:1 artwork'],
+      imTitle: ['นำเข้าลายวงจร / เนตลิสต์', 'Import layout / netlist'], imFile: ['ไฟล์', 'File'],
+      imFiles: ['ไฟล์ในแพ็กเกจ', 'Files in package'], imColFile: ['ไฟล์', 'File'], imColLayer: ['เลเยอร์ปลายทาง', 'Map to layer'], imColSize: ['ขนาด', 'Size'],
+      imPreview: ['ตัวอย่าง', 'Preview'], imOpts: ['ตัวเลือกการนำเข้า', 'Import options'],
+      imFormats: ['รูปแบบที่รองรับ', 'Supported formats'], imTrace: ['แปลงเป็นลายอัตโนมัติ', 'auto-vectorise'], imProgress: ['กำลังอ่าน', 'Reading'],
+      lmTitle: ['จัดการเลเยอร์', 'Layer manager'], lmName: ['ชื่อเลเยอร์', 'Layer'], lmObjects: ['ชิ้นงาน', 'Objects'], lmOpacity: ['ความทึบ', 'Opacity'],
+      lmProps: ['คุณสมบัติเลเยอร์', 'Layer properties'], lmColor: ['สีเลเยอร์', 'Layer colour'],
+      lmHint: ['ดับเบิลคลิกชื่อเลเยอร์เพื่อเปลี่ยนชื่อ · Ctrl+คลิก เพื่อเลือกหลายเลเยอร์', 'Double-click a name to rename · Ctrl+click for multi-select'],
+      lmMore: ['เพิ่มเติม...', 'More...'],
+      setTitle: ['ตั้งค่าโปรแกรม', 'Preferences'], setGen: ['ทั่วไป', 'General'], setLang: ['ภาษา', 'Language'],
+      setThemeTab: ['ธีมหน้าตา', 'Appearance'],
+      setThemeQ: ['ธีมหน้าต่างและปุ่ม', 'Window and control theme'],
+      setThemeNote: ['ธีมเปลี่ยนเฉพาะกรอบหน้าต่าง ปุ่ม และแผงควบคุม — พื้นที่ทำงานวงจรยังเป็นโทนมืดเสมอเพื่อให้เห็นลายวงจรและค่าที่วัดได้ชัด', 'Themes restyle window chrome, controls and panels only. The circuit workspace stays dark so traces and readings remain legible.'],
+      setThemeFont: ['ขนาดตัวอักษร', 'Font size'], setThemeAnim: ['เปิดแอนิเมชันหน้าต่าง', 'Window animations'],
+      setThemeShadow: ['เงาใต้เมนูและหน้าต่าง', 'Menu and window shadows'], setThemeApplyAll: ['ใช้ธีมนี้กับทุกหน้าต่างเครื่องมือวัด', 'Apply to instrument windows too'],
+      setSimTab: ['ซิมูเลชัน', 'Simulation'], setBoard: ['บอร์ด', 'Boards'], setKeys: ['คีย์ลัด', 'Shortcuts'],
+      setLangQ: ['ภาษาที่ใช้แสดงผล', 'Interface language'],
+      setPreview: ['ตัวอย่างหน้าจอ', 'Preview'], setPvTitle: ['คุณสมบัติ — R2', 'Properties — R2'],
+      setPvBody: ['ตัวต้านทาน 47 kΩ · ผิดพลาด ±1%', 'Resistor 47 kΩ · tolerance ±1%'],
+      setPvV: ['แรงดัน', 'Voltage'], setPvI: ['กระแส', 'Current'], setPvF: ['ความถี่', 'Frequency'],
+      setNote: ['เปลี่ยนภาษาแล้วใช้งานได้ทันที ไม่ต้องปิดโปรแกรม · ชื่อเบอร์อุปกรณ์และหน่วยจะคงเป็นภาษาอังกฤษตามมาตรฐาน', 'Language applies immediately, no restart. Part numbers and SI units stay in English per standard.'],
+      pKindRes: ['ตัวต้านทาน · SMD 0805', 'Resistor · SMD 0805'],
+      stIdle: ['พร้อมใช้งาน', 'Ready'], stRun: ['กำลังจำลอง', 'Simulating']
+    };
+    const t = {}; for (const k in D) t[k] = D[k][i];
+
+    const go = id => () => this.setState({ screen: id });
+    const mk = arr => arr.map((x, n) => ({ id: x[0], label: x[1], n: n + 1, on: s === x[0], off: s !== x[0], go: go(x[0]) }));
+    const screens = mk([['start', t.nvStart], ['schematic', t.nvSchem], ['library', t.nvLib], ['breadboard', t.nvBread],
+      ['sim', t.nvSim], ['instruments', t.nvInst], ['import', t.nvImport], ['pcb', t.nvPcb], ['layers', t.nvLayers], ['settings', t.nvSet]]);
+
+    const running = s === 'sim';
+    const modeFor = { schematic: 0, sim: 0, layers: 0, library: 0, import: 0, breadboard: 1, pcb: 2, instruments: 0 }[s] ?? 0;
+    const modeLabels = [t.tbSchem, t.tbBread, t.tbPcb, t.tbSpice];
+    const modes = modeLabels.map((label, k) => ({ label, on: k === modeFor, off: k !== modeFor }));
+
+    const toolGlyphs = ['✛', '⌁', '⊹', '⌗', '⎋', '⧉', '⌖', 'T', '⟂'];
+    const tools = toolGlyphs.map((g, k) => ({ g, on: k === 1, off: k !== 1 }));
+
+    const catData = [
+      ['R', ['Passive · R / C / L', 'Passive · R / C / L'], 1284],
+      ['D', ['ไดโอด & LED', 'Diodes & LEDs'], 642],
+      ['Q', ['ทรานซิสเตอร์ / MOSFET', 'Transistors / MOSFET'], 1130],
+      ['IC', ['ไอซี & ออปแอมป์', 'ICs & op-amps'], 2465],
+      ['&', ['ลอจิกเกต 74xx / 40xx', 'Logic 74xx / 40xx'], 388],
+      ['µ', ['ไมโครคอนโทรลเลอร์', 'Microcontrollers'], 214],
+      ['S', ['เซนเซอร์', 'Sensors'], 506],
+      ['M', ['มอเตอร์ & รีเลย์', 'Motors & relays'], 178],
+      ['V', ['ภาคจ่ายไฟ & เร็กกูเลเตอร์', 'Power & regulators'], 421],
+      ['7', ['จอแสดงผล LCD / OLED', 'Displays LCD / OLED'], 163],
+      ['J', ['คอนเนกเตอร์ & สวิตช์', 'Connectors & switches'], 597],
+      ['⎓', ['เครื่องมือวัด & แหล่งจ่าย', 'Test & measurement'], 84]
+    ];
+    const cats = catData.map((c, k) => ({ g: c[0], label: c[1][i], n: c[2].toLocaleString('en-US'), sel: k === 0, unsel: k !== 0 }));
+
+    const layerData = [
+      [['วงจรหลัก · Schematic', 'Schematic'], 148, '100%'],
+      [['ราง +5V / +9V', 'Power rails'], 22, '100%'],
+      [['สัญญาณ · Signal', 'Signal nets'], 61, '100%'],
+      [['กราวด์ · Ground', 'Ground'], 18, '100%'],
+      [['ป้ายเนต · Net labels', 'Net labels'], 14, '80%'],
+      [['หมายเหตุ & มิติ', 'Notes & dimensions'], 9, '65%'],
+      [['ทองแดงด้านบน · Top Cu', 'Top copper'], 96, '100%'],
+      [['ทองแดงด้านล่าง · Bottom Cu', 'Bottom copper'], 74, '55%'],
+      [['ซิลค์สกรีน · Silkscreen', 'Silkscreen'], 41, '90%']
+    ];
+    const layers = layerData.map((l, k) => ({
+      name: l[0][i], n: l[1], op: l[2], eye: k === 7 ? '·' : '👁', lock: k === 5 ? '🔒' : '·',
+      sel: k === 2, unsel: k !== 2
+    }));
+
+    const propFields = [
+      [['ชื่ออ้างอิง', 'Designator'], 'R2'],
+      [['ค่า', 'Value'], '47 kΩ'],
+      [['ผิดพลาด', 'Tolerance'], '±1 %'],
+      [['กำลังไฟ', 'Power'], '0.125 W'],
+      [['ฟุตพรินต์', 'Footprint'], 'R_0805_2012'],
+      [['โมเดล SPICE', 'SPICE model'], 'R 47k TC1=0'],
+      [['เลเยอร์', 'Layer'], i ? 'Signal nets' : 'สัญญาณ'],
+      [['หมุน / ล็อก', 'Rotation / lock'], '90° · OFF']
+    ].map(p => ({ k: p[0][i], v: p[1] }));
+
+    const simRows = [
+      [['แรงดันคร่อม', 'V across'], '2.86 V'],
+      [['กระแส', 'Current'], '60.8 µA'],
+      [['กำลังสูญเสีย', 'Dissipation'], '0.17 mW'],
+      [['อุณหภูมิผิว', 'Surface temp'], '28.4 °C'],
+      [['ค่ายอมรับได้', 'Rating used'], '0.14 %'],
+      [['เนต', 'Nets'], 'THR / DIS']
+    ].map(r => ({ k: r[0][i], v: r[1] }));
+
+    const status = [
+      [['พร้อม', 'Ready'], null],
+      [['X 184.15  Y 92.70 mm', null], null],
+      [['กริด 2.54 mm', 'Grid 2.54 mm'], null],
+      [['เนต 14 · อุปกรณ์ 22', 'Nets 14 · Parts 22'], null],
+      [['DRC 0 / ERC 0', null], null],
+      [['เลือกอยู่: R2', 'Selected: R2'], null],
+      [['SPICE3f5 · TRAN', null], null]
+    ].map(x => x[0][i] ?? x[0][0]);
+
+    const menus = [t.mFile, t.mEdit, t.mView, t.mPlace, t.mSim, t.mTools, t.mBoard, t.mWin, t.mHelp];
+
+    const recents = [
+      ['555-astable-reg.ebp', ['ผัง + PCB', 'Sch + PCB'], '03-09-2026'],
+      ['smps-12v-3a.ebp', ['ผัง + PCB', 'Sch + PCB'], '01-09-2026'],
+      ['esp32-sensor-node.ebp', ['บอร์ดทดลอง', 'Breadboard'], '28-08-2026'],
+      ['audio-preamp-ne5532.ebp', ['ผังวงจร', 'Schematic'], '26-08-2026'],
+      ['h-bridge-bts7960.ebp', ['ผัง + PCB', 'Sch + PCB'], '22-08-2026'],
+      ['7seg-counter-4026.ebp', ['ผังวงจร', 'Schematic'], '19-08-2026'],
+      ['lab-psu-0-30v.ebp', ['ผัง + PCB', 'Sch + PCB'], '15-08-2026'],
+      ['i2c-oled-driver.ebp', ['บอร์ดทดลอง', 'Breadboard'], '11-08-2026']
+    ].map(r => ({ name: r[0], kind: r[1][i], date: r[2] }));
+
+    const templates = [
+      ['555', ['ตั้งเวลา 555 astable', '555 astable timer']],
+      ['OPA', ['ออปแอมป์ขยายเสียง', 'Op-amp audio stage']],
+      ['PSU', ['ภาคจ่ายไฟเรกูเลต', 'Regulated supply']],
+      ['MCU', ['บอร์ด MCU ขั้นต่ำ', 'Minimal MCU board']],
+      ['74x', ['วงจรนับลอจิก', 'Logic counter']],
+      ['···', ['ผังเปล่า A3', 'Blank A3 sheet']]
+    ].map(x => ({ tag: x[0], label: x[1][i] }));
+
+    const chips = [
+      ['ทั้งหมด', 'All'], ['ในสต็อก', 'In stock'], ['มีโมเดล SPICE', 'Has SPICE model'],
+      ['ผ่านการรับรอง', 'Verified'], ['ทะลุแผ่น', 'Through-hole'], ['SMD']
+    ].map((c, k) => ({ label: c[i] ?? c[0], on: k === 0, off: k !== 0 }));
+
+    const partData = [
+      ['IC', 'NE555P', ['ไทเมอร์ 555 แรงดัน 4.5-16V', '555 timer, 4.5-16 V'], 'DIP-8', '555'],
+      ['IC', 'TL074CN', ['ออปแอมป์ JFET 4 ตัว', 'Quad JFET op-amp'], 'DIP-14', '▷'],
+      ['IC', 'LM358N', ['ออปแอมป์คู่ ทั่วไป', 'Dual general op-amp'], 'DIP-8', '▷'],
+      ['IC', 'LM7805', ['เร็กกูเลเตอร์ +5V 1A', '+5 V 1 A regulator'], 'TO-220', '⎓'],
+      ['IC', 'LM317T', ['เร็กกูเลเตอร์ปรับค่าได้', 'Adjustable regulator'], 'TO-220', '⎓'],
+      ['IC', 'ULN2003A', ['ไดรฟ์เวอร์ดาร์ลิงตัน 7 ช่อง', '7-ch Darlington array'], 'DIP-16', '⊳'],
+      ['Q', '2N3904', ['ทรานซิสเตอร์ NPN 200mA', 'NPN 200 mA'], 'TO-92', 'Q'],
+      ['Q', 'BD139', ['NPN กำลังกลาง 1.5A', 'Medium-power NPN'], 'TO-126', 'Q'],
+      ['Q', 'IRFZ44N', ['MOSFET N 49A 55V', 'N-MOSFET 49 A'], 'TO-220', 'Q'],
+      ['D', '1N4007', ['ไดโอดเรียงกระแส 1A', 'Rectifier 1 A 1000 V'], 'DO-41', '▶'],
+      ['D', '1N4148', ['ไดโอดสวิตชิง', 'Switching diode'], 'DO-35', '▶'],
+      ['D', 'LED-5R', ['LED แดง 5mm 20mA', 'Red LED 5 mm'], 'RAD-5', '☀'],
+      ['R', 'R-0805', ['ตัวต้านทาน SMD 1%', 'SMD resistor 1 %'], '0805', '▭'],
+      ['C', 'C-ELEC', ['อิเล็กโทรไลต์ 470µF 25V', 'Electrolytic 470 µF'], 'RAD-8', '⊣'],
+      ['L', 'L-100U', ['ขดลวด 100µH 3A', 'Inductor 100 µH'], 'RAD-10', '∿'],
+      ['&', '74HC00', ['NAND 2 อินพุต 4 ชุด', 'Quad 2-input NAND'], 'DIP-14', '&'],
+      ['&', '74HC595', ['ชิฟต์รีจิสเตอร์ 8 บิต', '8-bit shift register'], 'DIP-16', '&'],
+      ['µ', 'ATMEGA328P', ['MCU 8 บิต 16MHz', '8-bit MCU 16 MHz'], 'DIP-28', 'µ'],
+      ['µ', 'ESP32-WROOM', ['MCU ไวไฟ + บลูทูธ', 'Wi-Fi + BT MCU'], 'MOD-38', 'µ'],
+      ['µ', 'STM32F411', ['MCU Cortex-M4 100MHz', 'Cortex-M4 100 MHz'], 'LQFP-48', 'µ'],
+      ['S', 'DS18B20', ['เซนเซอร์อุณหภูมิ 1-Wire', '1-Wire temp sensor'], 'TO-92', 'S'],
+      ['S', 'MPU-6050', ['เกียโร + แอคเซล 6 แกน', '6-axis IMU'], 'QFN-24', 'S'],
+      ['M', 'SRD-05VDC', ['รีเลย์ 5V 10A', 'Relay 5 V 10 A'], 'THT', 'M'],
+      ['7', 'SSD1306', ['จอ OLED 0.96" I²C', '0.96" OLED I²C'], 'MOD-4', '▢']
+    ];
+    const parts = partData.map(p => ({ tag: p[0], pn: p[1], desc: p[2][i], pkg: p[3], sym: p[4] }));
+
+    const specs = [
+      [['แรงดันใช้งาน', 'Supply'], '4.5 – 16 V'],
+      [['กระแสจ่ายออก', 'Output current'], '±200 mA'],
+      [['ความถี่สูงสุด', 'Max frequency'], '500 kHz'],
+      [['ความผิดพลาดคาบ', 'Timing error'], '1.0 %'],
+      [['อุณหภูมิใช้งาน', 'Temp range'], '0 – 70 °C'],
+      [['แพ็กเกจ', 'Package'], 'DIP-8 / SO-8'],
+      [['โมเดล SPICE', 'SPICE model'], 'NE555.LIB'],
+      [['ฟุตพรินต์', 'Footprint'], 'DIP254P762X508-8'],
+      [['สถานะ', 'Lifecycle'], i ? 'Active' : 'ยังผลิตอยู่']
+    ].map(x => ({ k: x[0][i], v: x[1] }));
+
+    const pcbLayers = [
+      ['TOP CU', 1], ['BOT CU', 0], ['SILK', 0], ['MASK', 0], ['DRILL', 0], ['OUTLINE', 0]
+    ].map(l => ({ label: l[0], on: !!l[1], off: !l[1] }));
+
+    const aiGoals = [
+      [['ลายสั้นที่สุด', 'Shortest routing'], 1],
+      [['กระจายความร้อน (U1, Q1)', 'Thermal spread (U1, Q1)'], 1],
+      [['เว้นระยะไฟแรงสูง 2.0 mm', 'HV clearance 2.0 mm'], 1],
+      [['จัดกลุ่มตามบล็อกวงจร', 'Group by circuit block'], 0],
+      [['ลดจำนวนเวีย', 'Minimise vias'], 1]
+    ].map(g => ({ label: g[0][i], on: !!g[1], off: !g[1] }));
+
+    const barCells = Array.from({ length: 22 }, (_, k) => ({ on: k < 15, off: k >= 15 }));
+
+    const drc = [
+      [['ระยะลาย-ลาย', 'Track ↔ track'], 'PASS'],
+      [['ระยะลาย-แพด', 'Track ↔ pad'], 'PASS'],
+      [['ขนาดรูเจาะ', 'Drill size'], 'PASS'],
+      [['ลายกว้างพอรับกระแส', 'Current capacity'], 'PASS'],
+      [['ระยะขอบแผ่น 0.5 mm', 'Board edge 0.5 mm'], 'PASS'],
+      [['ซิลค์ทับแพด', 'Silk over pad'], 'PASS'],
+      [['เนตที่ยังไม่เดิน', 'Unrouted nets'], '6']
+    ].map(d => ({ k: d[0][i], v: d[1] }));
+
+    const scopeKnobs = [
+      [['ฐานเวลา', 'Timebase'], '50 µs/div'],
+      [['CH1 · แนวตั้ง', 'CH1 · vertical'], '2 V/div'],
+      [['CH2 · แนวตั้ง', 'CH2 · vertical'], '1 V/div'],
+      [['ทริกเกอร์', 'Trigger'], 'CH1 ↑ 2.5 V']
+    ].map(k => ({ label: k[0][i], val: k[1] }));
+
+    const scopeMeas = [
+      [['CH1 Vpp', null], '4.98 V'], [['ความถี่', 'Freq'], '1.442 kHz'],
+      [['ดิวตี้', 'Duty'], '63.2 %'], [['ขาขึ้น', 'Rise'], '142 ns'], [['RMS', null], '3.14 V']
+    ].map(m => ({ k: m[0][i] ?? m[0][0], v: m[1] }));
+
+    const dmmModes = ['V⎓', 'V∼', 'A⎓', 'A∼', 'Ω', '⊣C', '▶|', 'Hz'].map((label, k) => ({ label, on: k === 0, off: k !== 0 }));
+    const logicCh = ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'];
+
+    const importFiles = [
+      ['amp-v3-F_Cu.gbr', ['ทองแดงด้านบน', 'Top copper'], '84 KB'],
+      ['amp-v3-B_Cu.gbr', ['ทองแดงด้านล่าง', 'Bottom copper'], '71 KB'],
+      ['amp-v3-F_Mask.gbr', ['โซลเดอร์มาสก์บน', 'Top mask'], '22 KB'],
+      ['amp-v3-F_Silk.gbr', ['ซิลค์สกรีนบน', 'Top silk'], '39 KB'],
+      ['amp-v3-Edge.gbr', ['ขอบแผ่น', 'Board outline'], '4 KB'],
+      ['amp-v3.drl', ['ตำแหน่งเจาะ', 'Drill file'], '11 KB'],
+      ['amp-v3.net', ['เนตลิสต์', 'Netlist'], '18 KB'],
+      ['amp-v3-BOM.csv', ['รายการอุปกรณ์', 'Bill of materials'], '6 KB']
+    ].map(f => ({ name: f[0], layer: f[1][i], size: f[2] }));
+
+    const importOpts = [
+      [['จับคู่ฟุตพรินต์กับคลังอุปกรณ์อัตโนมัติ', 'Auto-match footprints to library'], 1],
+      [['สร้างผังวงจรย้อนกลับจากเนตลิสต์', 'Reverse-engineer schematic from netlist'], 1],
+      [['แนบโมเดล SPICE ให้อุปกรณ์ที่รู้จัก', 'Attach SPICE models to known parts'], 1],
+      [['รวมเป็นเลเยอร์ใหม่ ไม่ทับของเดิม', 'Import into new layers, keep existing'], 1],
+      [['หน่วยเป็นมิลลิเมตร (ไม่ใช่ mil)', 'Use millimetres (not mil)'], 0]
+    ].map(o => ({ label: o[0][i], on: !!o[1], off: !o[1] }));
+
+    const lmBtns = [
+      ['เพิ่ม', 'Add'], ['ลบ', 'Delete'], ['จัดกลุ่ม', 'Group'], ['รวมเลเยอร์', 'Merge'], ['นำเข้าชุดเลเยอร์', 'Import set']
+    ].map(b => b[i]);
+
+    const lmFields = [
+      [['ชนิด', 'Type'], i ? 'Signal / copper' : 'สัญญาณ / ทองแดง'],
+      [['โหมดผสาน', 'Blend mode'], i ? 'Normal' : 'ปกติ'],
+      [['ใช้กับซิมูเลชัน', 'Include in sim'], i ? 'Yes' : 'ใช้'],
+      [['พิมพ์ออก', 'Printable'], i ? 'Yes' : 'พิมพ์'],
+      [['สแนป', 'Snap'], '2.54 mm']
+    ].map(f => ({ k: f[0][i], v: f[1] }));
+
+    const tab = this.tab();
+    const setTabs = [t.setGen, t.setLang, t.setThemeTab, t.setSimTab, t.setBoard, t.setKeys]
+      .map((label, k) => ({ label, on: k === tab, off: k !== tab, go: (k === 1 || k === 2) ? () => this.setState({ setTab: k }) : undefined }));
+
+    const th = this.thm();
+    const themeMeta = [
+      ['me', 'Windows ME', ['หน้าตาเดิม · ขอบนูน 2 พิกเซล', 'Original chrome · 2px bevels'], 'ME'],
+      ['xp', 'Windows XP · Luna Blue', ['ขอบโค้ง ไทเทิลบาร์ไล่สีฟ้า', 'Rounded frames, blue caption'], 'XP'],
+      ['silver', 'Windows XP · Silver', ['โทนเงินเทา รบกวนสายตาน้อย', 'Neutral silver, low visual noise'], 'SILVER'],
+      ['mac', 'Macintosh · Platinum', ['ไทเทิลบาร์ลายเส้น ปุ่มมุมโค้ง', 'Pinstripe caption, rounded buttons'], 'MAC'],
+      ['macos', 'macOS · Sonoma', ['โทนสว่าง มุมโค้งมาก ปุ่มไฟจราจร', 'Light, soft radii, traffic lights'], 'macOS'],
+      ['aqua', 'Aqua 3D · Liquid', ['ปุ่มวุ้นเงา 3 มิติ สีสดใส', 'Glossy 3D gel controls, vivid blue'], 'AQUA'],
+      ['classic', 'Classic 2000', ['แบนราบ ไทเทิลบาร์น้ำเงินทึบ', 'Flat, solid navy caption'], '2000']
+    ];
+    const themeBtns = themeMeta.map(m => ({ label: m[3], on: th === m[0], off: th !== m[0], go: () => this.setState({ theme: m[0] }) }));
+    const tm = {};
+    themeMeta.forEach(m => { const key = m[0] === 'me' ? 'me' : m[0]; tm[key + 'Name'] = m[1]; tm[key + 'Desc'] = m[2][i]; tm[key + 'On'] = th === m[0]; tm[key + 'Off'] = th !== m[0]; tm['set' + key] = () => this.setState({ theme: m[0] }); });
+
+    const langOpts = [
+      ['ไทย (Thai) — ค่าเริ่มต้น', 'ไทย (Thai)'],
+      ['English (United States)', 'English (United States) — default'],
+      ['ไทย + English (แสดงคู่กัน)', 'Thai + English (bilingual labels)']
+    ].map((l, k) => ({ label: l[i] ?? l[0], on: k === i, off: k !== i }));
+
+    const setFields = [
+      [['ฟอนต์อินเทอร์เฟซ', 'Interface font'], 'Tahoma 8 pt'],
+      [['หน่วยความยาว', 'Length unit'], i ? 'Millimetre (mm)' : 'มิลลิเมตร (mm)'],
+      [['รูปแบบตัวเลข', 'Number format'], '1,234.56'],
+      [['คำนำหน้าหน่วย', 'SI prefix style'], 'k / M / µ / n'],
+      [['ปฏิทิน', 'Calendar'], i ? 'Gregorian' : 'พุทธศักราช (พ.ศ.)']
+    ].map(f => ({ k: f[0][i], v: f[1] }));
+
+    const setChecks = [
+      [['ใช้ชื่อเบอร์อุปกรณ์เป็นภาษาอังกฤษเสมอ', 'Always keep part numbers in English'], 1],
+      [['แสดงคำแนะนำเครื่องมือสองภาษา', 'Bilingual tooltips'], 1],
+      [['สลับภาษาด้วยคีย์ลัด Ctrl+Shift+L', 'Toggle language with Ctrl+Shift+L'], 1]
+    ].map(c => ({ label: c[0][i], on: !!c[1], off: !c[1] }));
+
+    return {
+      t, lang, screens, menus, tools, modes, cats, layers, propFields, simRows, status,
+      recents, templates, chips, parts, specs, pcbLayers, aiGoals, barCells, drc,
+      scopeKnobs, scopeMeas, dmmModes, logicCh, importFiles, importOpts,
+      lmBtns, lmFields, setTabs, langOpts, setFields, setChecks,
+      themeBtns, tm, tabLang: tab === 1, tabTheme: tab === 2,
+      rootRef: el => { this.rootEl = el; this.applyTheme(); },
+      isTH: lang === 'th', isEN: lang === 'en',
+      setTH: () => this.setState({ lang: 'th' }), setEN: () => this.setState({ lang: 'en' }),
+      running, notRunning: !running,
+      netLabels: this.props.netLabels ?? true,
+      isStart: s === 'start', isShell: s !== 'start',
+      isSchemLike: s === 'schematic' || s === 'sim',
+      isLib: s === 'library', isBread: s === 'breadboard', isPcb: s === 'pcb',
+      isInst: s === 'instruments', isImport: s === 'import', isLayers: s === 'layers', isSet: s === 'settings'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+.vs/
+
+# local logo build scratch (font is downloaded, not vendored)
+.build/
+
+# ngspice sidecar binary — fetched by tools/fetch-ngspice.ps1, not committed
+tools/ngspice/
+
+# sim scratch
+*.raw
+*.cir.tmp

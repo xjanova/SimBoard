@@ -1,0 +1,246 @@
+<title>SimBoard Logo Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ink:#12161b; --ink2:#171c22; --ink4:#1c232b;
+  --line:#2b3440; --line2:#3a4652;
+  --fg:#dbe4ec; --fg2:#8fa8bd; --fg3:#7f97ab;
+  --accent:#e8b04a; --accent2:#8a6420; --ok:#5fd0a8; --data:#6fd3e0;
+  --sans:"IBM Plex Sans Thai","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --brand:"IBM Plex Sans","IBM Plex Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Lucida Console",monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --ink:#eef1f4; --ink2:#ffffff; --ink4:#f7f9fa; --line:#ccd5dd; --line2:#a9b8c4;
+    --fg:#14202a; --fg2:#4a5f70; --fg3:#63788a;
+    --accent:#8a6420; --accent2:#d8b473; --ok:#1c7a3e; --data:#1d6d79;
+  }
+}
+:root[data-theme="light"]{
+  --ink:#eef1f4; --ink2:#ffffff; --ink4:#f7f9fa; --line:#ccd5dd; --line2:#a9b8c4;
+  --fg:#14202a; --fg2:#4a5f70; --fg3:#63788a;
+  --accent:#8a6420; --accent2:#d8b473; --ok:#1c7a3e; --data:#1d6d79;
+}
+*{box-sizing:border-box}
+body{background:var(--ink);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.72;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:44px 22px 90px;display:flex;flex-direction:column;gap:34px}
+p{margin:0;max-width:68ch}
+header{display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font-size:clamp(26px,4.6vw,38px);line-height:1.16;font-weight:700;letter-spacing:-.015em}
+.lede{font-size:16px;color:var(--fg2);max-width:62ch;line-height:1.6}
+h2{margin:0;font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--accent);display:flex;align-items:baseline;gap:11px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec{display:flex;flex-direction:column;gap:15px}
+.panel{border:1px solid var(--line);background:var(--ink2)}
+.panel > .cap{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--fg2);background:var(--ink4);border-bottom:1px solid var(--line);
+  padding:7px 13px;display:flex;justify-content:space-between;gap:12px}
+.panel > .cap .n{color:var(--accent)}
+
+/* ── grounds: a logo must hold on both, so these are fixed, not themed ── */
+.ground{padding:40px 30px;display:flex;align-items:center;justify-content:center;overflow-x:auto}
+.ground.dark{background:#12161b; --cu:#e8b04a; --bd:#12161b; --tx:#dbe4ec; --sg:#5fd0a8}
+.ground.light{background:#eef1f4; --cu:#8a6420; --bd:#eef1f4; --tx:#14202a; --sg:#1c7a3e}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+@media (max-width:660px){.pair{grid-template-columns:1fr}}
+
+/* ══ THE WORDMARK — real type, circuit details anchored per letter ══ */
+.wm{font-family:var(--brand);font-weight:600;letter-spacing:-.022em;line-height:1;
+  color:var(--tx);position:relative;display:inline-flex;white-space:nowrap;font-size:66px}
+.wm .l{position:relative;display:inline-block}
+.wm .cu{color:var(--cu)}
+
+/* i — the tittle becomes a solder pad with a plated via (letter is a dotless ı) */
+.d1 .l.i::before,.d2 .l.i::before,.d3 .l.i::before{content:"";position:absolute;left:50%;top:-.275em;
+  transform:translateX(-50%);width:.26em;height:.26em;border-radius:50%;background:var(--cu)}
+.d1 .l.i::after,.d2 .l.i::after,.d3 .l.i::after{content:"";position:absolute;left:50%;top:-.196em;
+  transform:translateX(-50%);width:.102em;height:.102em;border-radius:50%;background:var(--bd)}
+
+/* o — a via drilled through the counter */
+.d1 .l.o::after,.d2 .l.o::after,.d3 .l.o::after{content:"";position:absolute;left:50%;top:.52em;
+  transform:translate(-50%,-50%);width:.125em;height:.125em;border-radius:50%;background:var(--cu)}
+
+/* m — three SMD pads under the stems, like IC legs */
+.d2 .l.m::after,.d3 .l.m::after{content:"";position:absolute;left:6%;right:6%;top:.855em;height:.075em;
+  background:linear-gradient(90deg,var(--cu) 0 24%,transparent 24% 38%,
+    var(--cu) 38% 62%,transparent 62% 76%,var(--cu) 76% 100%)}
+
+/* B — vias in both counters */
+.d3 .l.b::before{content:"";position:absolute;left:60%;top:.265em;transform:translate(-50%,-50%);
+  width:.10em;height:.10em;border-radius:50%;background:var(--cu)}
+.d3 .l.b::after{content:"";position:absolute;left:62%;top:.585em;transform:translate(-50%,-50%);
+  width:.10em;height:.10em;border-radius:50%;background:var(--cu)}
+
+/* d — a trace stub off the ascender ending in a pad */
+.d3 .l.d::before{content:"";position:absolute;left:100%;top:.145em;width:.30em;height:.062em;
+  background:var(--cu)}
+.d3 .l.d::after{content:"";position:absolute;left:calc(100% + .28em);top:.176em;
+  transform:translateY(-50%);width:.16em;height:.16em;border-radius:50%;background:var(--cu)}
+
+/* the copper bus running under the word */
+.d2::after,.d3::after{content:"";position:absolute;left:.05em;right:.05em;top:1.00em;height:.062em;
+  background:var(--cu)}
+.d2::before,.d3::before{content:"";position:absolute;left:-.02em;top:1.031em;transform:translateY(-50%);
+  width:.17em;height:.17em;border-radius:50%;background:var(--cu)}
+
+.lockH{display:flex;align-items:center;gap:16px}
+.lockV{display:flex;flex-direction:column;align-items:center;gap:16px}
+.sizes{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;justify-content:center}
+.sizecell{display:flex;flex-direction:column;align-items:center;gap:7px}
+.sizecell span{font-family:var(--mono);font-size:9.5px;color:var(--tx);opacity:.6}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:1px;background:var(--line)}
+.notes > div{background:var(--ink2);padding:13px 15px;display:flex;flex-direction:column;gap:4px}
+.notes dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
+.notes dd{margin:0;font-size:13.5px;color:var(--fg);line-height:1.6}
+.notes dd b{color:var(--accent);font-weight:600}
+code{font-family:var(--mono);font-size:.9em;color:var(--data);
+  background:color-mix(in srgb,var(--data) 11%,transparent);padding:1px 4px}
+.note{font-size:13.5px;color:var(--fg3);border-left:2px solid var(--line2);padding-left:12px;max-width:66ch}
+.swatches{display:flex;gap:1px;background:var(--line);flex-wrap:wrap}
+.sw{background:var(--ink2);padding:10px 13px;display:flex;align-items:center;gap:9px;flex:1 1 auto;min-width:170px}
+.chip{width:22px;height:22px;border:1px solid var(--line2);flex:none}
+.sw div{display:flex;flex-direction:column;line-height:1.35}
+.sw b{font-size:12.5px;font-weight:600}
+.sw span{font-family:var(--mono);font-size:10.5px;color:var(--fg3)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="sbmark" viewBox="0 0 64 64">
+    <rect x="2" y="2" width="60" height="60" rx="13" fill="#12161b" stroke="#8a6420" stroke-width="2"/>
+    <path d="M13 26 H21 V16 H33 V26 H43 V16 H51" fill="none" stroke="#5fd0a8" stroke-width="3"
+          stroke-linejoin="round" stroke-linecap="square"/>
+    <path d="M13 48 H27 L35 40 H39" fill="none" stroke="#e8b04a" stroke-width="5.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="46" cy="40" r="8" fill="#e8b04a"/>
+    <circle cx="46" cy="40" r="3.2" fill="#12161b"/>
+  </symbol>
+</defs></svg>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">ชุดโลโก้ · ตัวอักษรฟอนต์จริง ไม่ใช่ภาพเจน</div>
+  <h1>SimBoard · ชุดโลโก้</h1>
+  <p class="lede">สะกดเต็มคำ และเอาลูกเล่นวงจรเข้าไปอยู่ในตัวอักษรเองตามที่สั่ง — ไม่ใช่แปะไอคอนไว้ข้าง ๆ ทุกจุดที่แทรกเป็นจุดที่ตัวอักษร<em>มีช่องว่างอยู่แล้ว</em> เลยไม่ไปกวนการอ่าน</p>
+</header>
+
+<section class="sec">
+  <h2>จุดที่แทรกวงจรได้ · ไล่จากเบาไปหนัก</h2>
+  <p>ทำมาสามระดับ เพราะโลโก้ต้องใช้หลายที่ — บนป้ายใหญ่ใส่เต็มได้ บน title bar 22px ต้องเหลือแค่เบา</p>
+
+  <div class="panel">
+    <div class="cap"><span>ระดับ ก · เบา — จุดบน i เป็นแพดบัดกรี, ตัว o เจาะเวีย</span><span class="n">2 จุด</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="wm d1" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+      <div class="ground light"><div class="wm d1" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="cap"><span>★ ระดับ ข · กลาง — เพิ่มขาแพด SMD ใต้ m และรางทองแดงใต้คำ · <strong style="color:var(--accent)">เลือกใช้ตัวนี้</strong></span><span class="n">4 จุด</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="wm d2" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+      <div class="ground light"><div class="wm d2" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="cap"><span>ระดับ ค · เต็ม — เพิ่มเวียในช่องตัว B สองรู และลายแตกออกจากหาง d จบที่แพด</span><span class="n">7 จุด</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="wm d3" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+      <div class="ground light"><div class="wm d3" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>ล็อกอัพเต็ม · มาร์ก + ชื่อ</h2>
+  <p>มาร์กสี่เหลี่ยมสะท้อนชื่อสองครึ่งตรง ๆ — <b style="color:var(--ok)">Sim</b> เป็นคลื่นสัญญาณด้านบน <b style="color:var(--accent)">Board</b> เป็นลายทองแดงหักมุม 45° จบที่แพดพร้อมรูเวียด้านล่าง</p>
+  <div class="panel">
+    <div class="cap"><span>แนวนอน · ตัวหลัก</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="lockH">
+        <svg width="54" height="54" aria-hidden="true"><use href="#sbmark"/></svg>
+        <div class="wm d2" style="font-size:38px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+      </div></div>
+      <div class="ground light"><div class="lockH">
+        <svg width="54" height="54" aria-hidden="true"><use href="#sbmark"/></svg>
+        <div class="wm d2" style="font-size:38px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="cap"><span>แนวตั้ง · หน้าเปิดโปรแกรม / about</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="lockV">
+        <svg width="76" height="76" aria-hidden="true"><use href="#sbmark"/></svg>
+        <div class="wm d1" style="font-size:30px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+      </div></div>
+      <div class="ground light"><div class="lockV">
+        <svg width="76" height="76" aria-hidden="true"><use href="#sbmark"/></svg>
+        <div class="wm d1" style="font-size:30px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>พิสูจน์ตอนย่อ</h2>
+  <p>เกณฑ์จริงของไอคอนเดสก์ท็อปคือ 16px บน task bar — ถ้าตรงนั้นเละ ที่เหลือไม่มีความหมาย และชื่อที่ 14px คือขนาดบน title bar จริงตามสเปก</p>
+  <div class="panel">
+    <div class="cap"><span>มาร์กเดี่ยว 16–64px · ชื่อที่ 14px และ 20px</span></div>
+    <div class="pair">
+      <div class="ground dark"><div class="lockV">
+        <div class="sizes">
+          <div class="sizecell"><svg width="16" height="16" aria-hidden="true"><use href="#sbmark"/></svg><span>16</span></div>
+          <div class="sizecell"><svg width="24" height="24" aria-hidden="true"><use href="#sbmark"/></svg><span>24</span></div>
+          <div class="sizecell"><svg width="32" height="32" aria-hidden="true"><use href="#sbmark"/></svg><span>32</span></div>
+          <div class="sizecell"><svg width="48" height="48" aria-hidden="true"><use href="#sbmark"/></svg><span>48</span></div>
+          <div class="sizecell"><svg width="64" height="64" aria-hidden="true"><use href="#sbmark"/></svg><span>64</span></div>
+        </div>
+        <div class="wm d1" style="font-size:14px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+        <div class="wm d1" style="font-size:20px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+      </div></div>
+      <div class="ground light"><div class="lockV">
+        <div class="sizes">
+          <div class="sizecell"><svg width="16" height="16" aria-hidden="true"><use href="#sbmark"/></svg><span>16</span></div>
+          <div class="sizecell"><svg width="24" height="24" aria-hidden="true"><use href="#sbmark"/></svg><span>24</span></div>
+          <div class="sizecell"><svg width="32" height="32" aria-hidden="true"><use href="#sbmark"/></svg><span>32</span></div>
+          <div class="sizecell"><svg width="48" height="48" aria-hidden="true"><use href="#sbmark"/></svg><span>48</span></div>
+          <div class="sizecell"><svg width="64" height="64" aria-hidden="true"><use href="#sbmark"/></svg><span>64</span></div>
+        </div>
+        <div class="wm d1" style="font-size:14px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+        <div class="wm d1" style="font-size:20px" role="img" aria-label="SimBoard"><span class="l s">S</span><span class="l i">ı</span><span class="l m">m</span><span class="l b cu">B</span><span class="l o cu">o</span><span class="l a cu">a</span><span class="l r cu">r</span><span class="l d cu">d</span></div>
+    </div></div>
+    </div>
+  </div>
+  <p class="note">ที่ 14px ระดับเบายังเหลือแพดบน i กับเวียใน o อ่านออก — ระดับกลางกับเต็มจะเละที่ขนาดนี้ เลยเป็นเหตุผลที่ทำสามระดับ ไม่ใช่ทำแบบเดียว</p>
+</section>
+
+<section class="sec">
+  <h2>สเปกที่ใช้จริง</h2>
+  <div class="notes">
+    <div><dt>ฟอนต์</dt><dd><b>IBM Plex Sans SemiBold 600</b> · tracking <code>-0.022em</code><br>IBM ทำมาเพื่องานเอกสารเทคนิคโดยเฉพาะ และมีคู่ไทย (IBM Plex Sans Thai) พร้อมใช้ในตัวโปรแกรม</dd></div>
+    <div><dt>ตัว i</dt><dd>ใช้ <code>ı</code> ตัวไม่มีจุด (U+0131) แล้ววาดแพดทับเอง — <b>ไม่ใช่จุดของฟอนต์</b> จึงคุมขนาดรูเวียได้</dd></div>
+    <div><dt>การแบ่งสี</dt><dd><b>Sim</b> สีตัวอักษรปกติ · <b>Board</b> สีทองแดง — สีเดียวกับ "สิ่งที่ถูกเลือก" และ "กระแสที่กำลังไหล" ในตัวโปรแกรม</dd></div>
+    <div><dt>ห้ามทำ</dt><dd>ห้ามยืด/บีบ · ห้ามใส่เงาหรือเกรเดียนต์ · ห้ามสลับสีสองครึ่ง · เว้นขอบรอบล็อกอัพอย่างน้อยเท่าความสูงตัว S</dd></div>
+  </div>
+  <div class="swatches">
+    <div class="sw"><span class="chip" style="background:#e8b04a"></span><div><b>Copper</b><span>#e8b04a · พื้นมืด</span></div></div>
+    <div class="sw"><span class="chip" style="background:#8a6420"></span><div><b>Copper dark</b><span>#8a6420 · พื้นสว่าง</span></div></div>
+    <div class="sw"><span class="chip" style="background:#5fd0a8"></span><div><b>Signal</b><span>#5fd0a8</span></div></div>
+    <div class="sw"><span class="chip" style="background:#12161b"></span><div><b>Board</b><span>#12161b</span></div></div>
+  </div>
+  <p class="note">ทั้งหน้านี้ไม่มีภาพเจนสักชิ้น — มาร์กเป็น SVG เขียนมือ 5 รูปทรง ตัวอักษรเป็นฟอนต์จริง ลูกเล่นวงจรเป็นรูปทรงที่วางพิกัดเทียบกับตัวอักษรแต่ละตัว เปิดแก้ใน Figma/Illustrator ได้ทันที และ export <code>.ico</code> ทุกขนาดจากไฟล์เดียว</p>
+</section>
+
+</div>
