@@ -3,6 +3,7 @@
     <Project Path="spikes/S1.NgspiceSidecar/S1.NgspiceSidecar.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/SimBoard.App/SimBoard.App.csproj" />
     <Project Path="src/SimBoard.Parts/SimBoard.Parts.csproj" />
     <Project Path="src/SimBoard.Spice/SimBoard.Spice.csproj" />
   </Folder>

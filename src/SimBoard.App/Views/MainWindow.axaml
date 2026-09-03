@@ -1,0 +1,162 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:SimBoard.App.Controls"
+        xmlns:app="using:SimBoard.App"
+        x:Class="SimBoard.App.Views.MainWindow"
+        x:DataType="app:AppState"
+        Width="1480" Height="920" MinWidth="1280" MinHeight="800"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="Full"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Background="{DynamicResource Face}"
+        Title="SimBoard">
+
+  <c:Bevel Classes="flat">
+    <DockPanel LastChildFill="True">
+
+      <!-- ── TitleBar · 22px ─────────────────────────────────────────────── -->
+      <c:Bevel Classes="titlebar" DockPanel.Dock="Top" Name="TitleBarArea"
+               CornerRadius="{DynamicResource WindowRadius}">
+        <Grid ColumnDefinitions="14,*,Auto">
+          <Border Grid.Column="0" Width="12" Height="12" CornerRadius="2"
+                  Background="#e8b04a" BorderBrush="#8a6420" BorderThickness="1" />
+          <TextBlock Grid.Column="1" Margin="6,0,0,0"
+                     Text="555-astable-reg.sbp — SimBoard" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
+            <Button Name="MinBtn" Width="16" Height="14" Padding="0" MinHeight="0">
+              <Button.Template>
+                <ControlTemplate>
+                  <c:Bevel Background="{DynamicResource MinBg}"
+                           CornerRadius="{DynamicResource WindowButtonRadius}"
+                           TopBrush="{DynamicResource MinBorderTop}"
+                           RightBrush="{DynamicResource MinBorderRight}"
+                           BottomBrush="{DynamicResource MinBorderBottom}"
+                           LeftBrush="{DynamicResource MinBorderLeft}">
+                    <TextBlock Text="_" FontSize="9" HorizontalAlignment="Center"
+                               VerticalAlignment="Top" Margin="0,-3,0,0"
+                               Foreground="{DynamicResource WindowButtonFg}" />
+                  </c:Bevel>
+                </ControlTemplate>
+              </Button.Template>
+            </Button>
+            <Button Name="MaxBtn" Width="16" Height="14" Padding="0" MinHeight="0">
+              <Button.Template>
+                <ControlTemplate>
+                  <c:Bevel Background="{DynamicResource MaxBg}"
+                           CornerRadius="{DynamicResource WindowButtonRadius}"
+                           TopBrush="{DynamicResource MaxBorderTop}"
+                           RightBrush="{DynamicResource MaxBorderRight}"
+                           BottomBrush="{DynamicResource MaxBorderBottom}"
+                           LeftBrush="{DynamicResource MaxBorderLeft}">
+                    <TextBlock Text="□" FontSize="8" HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource WindowButtonFg}" />
+                  </c:Bevel>
+                </ControlTemplate>
+              </Button.Template>
+            </Button>
+            <Button Name="CloseBtn" Width="16" Height="14" Padding="0" MinHeight="0">
+              <Button.Template>
+                <ControlTemplate>
+                  <c:Bevel Background="{DynamicResource CloseBg}"
+                           CornerRadius="{DynamicResource WindowButtonRadius}"
+                           TopBrush="{DynamicResource CloseBorderTop}"
+                           RightBrush="{DynamicResource CloseBorderRight}"
+                           BottomBrush="{DynamicResource CloseBorderBottom}"
+                           LeftBrush="{DynamicResource CloseBorderLeft}">
+                    <TextBlock Text="✕" FontSize="8" HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource CloseFg}" />
+                  </c:Bevel>
+                </ControlTemplate>
+              </Button.Template>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </c:Bevel>
+
+      <!-- ── MenuBar · 20px ──────────────────────────────────────────────── -->
+      <c:Bevel Classes="flat" DockPanel.Dock="Top" Height="20"
+               BottomBrush="{DynamicResource Shad}" EdgeThickness="1"
+               TopBrush="{x:Null}" LeftBrush="{x:Null}" RightBrush="{x:Null}">
+        <StackPanel Orientation="Horizontal" Name="MenuHost" />
+      </c:Bevel>
+
+      <!-- ── Toolbar · 30px ──────────────────────────────────────────────── -->
+      <c:Bevel Classes="flat" DockPanel.Dock="Top" Height="30" Padding="3,0"
+               BottomBrush="{DynamicResource Shad}" EdgeThickness="1"
+               TopBrush="{x:Null}" LeftBrush="{x:Null}" RightBrush="{x:Null}">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="0"
+                      Name="ToolbarHost" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <c:Bevel Classes="statuscell" Padding="7,2" Name="EngineBadge">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Ellipse Width="7" Height="7" Fill="#1c7a3e" VerticalAlignment="Center" />
+                <TextBlock Classes="mono" Text="SPICE3f5" VerticalAlignment="Center" />
+              </StackPanel>
+            </c:Bevel>
+          </StackPanel>
+        </Grid>
+      </c:Bevel>
+
+      <!-- ── StatusBar · 22px ────────────────────────────────────────────── -->
+      <c:Bevel Classes="flat" DockPanel.Dock="Bottom" Height="22" Padding="1,2">
+        <StackPanel Orientation="Horizontal" Spacing="2" Name="StatusHost" />
+      </c:Bevel>
+
+      <!-- ── three panes ─────────────────────────────────────────────────── -->
+      <Grid ColumnDefinitions="236,*,278">
+
+        <!-- left · component library -->
+        <c:Bevel Grid.Column="0" Classes="flat" Padding="4"
+                 RightBrush="{DynamicResource Shad}" EdgeThickness="1"
+                 TopBrush="{x:Null}" BottomBrush="{x:Null}" LeftBrush="{x:Null}">
+          <DockPanel LastChildFill="True">
+            <c:Bevel Classes="caption" DockPanel.Dock="Top" Margin="0,0,0,4">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding [pnLib], Source={x:Static app:L.I}}" />
+                <TextBlock Grid.Column="1" Text="▾" />
+              </Grid>
+            </c:Bevel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,22" Margin="0,0,0,4">
+              <TextBox Grid.Column="0" Watermark="{Binding [libSearch], Source={x:Static app:L.I}}" />
+              <Button Grid.Column="1" Content="🔍" Margin="2,0,0,0" Padding="0" MinHeight="0" />
+            </Grid>
+            <c:Bevel Classes="sunken" Name="LibraryTreeHost" />
+          </DockPanel>
+        </c:Bevel>
+
+        <!-- centre · mode tabs + workspace -->
+        <DockPanel Grid.Column="1" LastChildFill="True">
+          <Grid DockPanel.Dock="Top" Height="22" ColumnDefinitions="Auto,*,Auto" Margin="6,0,6,0">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="1"
+                        VerticalAlignment="Bottom" Name="ModeTabHost" />
+            <TextBlock Grid.Column="2" Classes="dense" Foreground="#4a4a4a"
+                       VerticalAlignment="Center"
+                       Text="{Binding [sheetOf], Source={x:Static app:L.I}}" />
+          </Grid>
+          <c:Bevel Classes="workspace" Margin="6,0,6,4" Name="WorkspaceHost" />
+        </DockPanel>
+
+        <!-- right · layers / properties / sim result -->
+        <c:Bevel Grid.Column="2" Classes="flat" Padding="4"
+                 LeftBrush="{DynamicResource Shad}" EdgeThickness="1"
+                 TopBrush="{x:Null}" BottomBrush="{x:Null}" RightBrush="{x:Null}">
+          <DockPanel LastChildFill="True">
+            <c:Bevel Classes="caption" DockPanel.Dock="Top" Margin="0,0,0,4">
+              <TextBlock Text="{Binding [pnLayers], Source={x:Static app:L.I}}" />
+            </c:Bevel>
+            <c:Bevel Classes="sunken" DockPanel.Dock="Top" Height="184" Name="LayerListHost" />
+            <c:Bevel Classes="caption" DockPanel.Dock="Top" Margin="0,4">
+              <TextBlock Text="{Binding [pnProps], Source={x:Static app:L.I}}" />
+            </c:Bevel>
+            <c:Bevel Classes="sunken" Name="PropertiesHost" />
+          </DockPanel>
+        </c:Bevel>
+      </Grid>
+    </DockPanel>
+  </c:Bevel>
+</Window>

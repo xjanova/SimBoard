@@ -1,0 +1,263 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:SimBoard.App.Controls">
+
+  <!--
+    The retro control library. Every visual here reads a theme token through
+    DynamicResource — nothing hard-codes a colour, because switching chrome is a
+    single dictionary swap and a literal would survive it.
+
+    Sizes come from the spec and are deliberately fixed: this is a dense desktop
+    tool, not a responsive page. 11px body, 10px panel rows, 9px dense tables.
+  -->
+
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="Tahoma, Leelawadee UI, Noto Sans Thai, Segoe UI" />
+    <Setter Property="FontSize" Value="11" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="FontFamily" Value="Tahoma, Leelawadee UI, Noto Sans Thai, Segoe UI" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#1a1a1a" />
+  </Style>
+
+  <!-- Measured values never share a face with prose. That split is the core
+       typographic rule in the spec, so it lives in a class, not in each usage. -->
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="Lucida Console, Consolas, monospace" />
+    <Setter Property="FontSize" Value="10" />
+  </Style>
+  <Style Selector="TextBlock.dense">
+    <Setter Property="FontFamily" Value="Lucida Console, Consolas, monospace" />
+    <Setter Property="FontSize" Value="9" />
+  </Style>
+
+  <!-- ── raised surface: the default for buttons, panels, toolbars ───────── -->
+  <Style Selector="c|Bevel.raised">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+    <Setter Property="TopBrush" Value="{DynamicResource RaiseBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource RaiseBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource RaiseBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource RaiseBorderLeft}" />
+    <Setter Property="Shadow" Value="{DynamicResource RaiseShadow}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlRadius}" />
+  </Style>
+
+  <!-- ── sunken surface: text fields, list boxes, status cells ───────────── -->
+  <Style Selector="c|Bevel.sunken">
+    <Setter Property="Background" Value="White" />
+    <Setter Property="TopBrush" Value="{DynamicResource SunkBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource SunkBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource SunkBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource SunkBorderLeft}" />
+    <Setter Property="Shadow" Value="{DynamicResource SunkShadow}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlRadius}" />
+  </Style>
+
+  <Style Selector="c|Bevel.sunken.face">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+  </Style>
+
+  <!-- ── flat panel: no edge, just the control face ──────────────────────── -->
+  <Style Selector="c|Bevel.flat">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+    <Setter Property="EdgeThickness" Value="0" />
+  </Style>
+
+  <!-- ── the workspace is never themed. Dark always, so traces and measured
+         values stay legible whatever chrome the user picked. ─────────────── -->
+  <Style Selector="c|Bevel.workspace">
+    <Setter Property="Background" Value="#12161b" />
+    <Setter Property="TopBrush" Value="{DynamicResource SunkBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource SunkBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource SunkBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource SunkBorderLeft}" />
+    <Setter Property="CornerRadius" Value="0" />
+  </Style>
+
+  <!-- ── Button ──────────────────────────────────────────────────────────── -->
+  <Style Selector="Button">
+    <Setter Property="Padding" Value="9,2" />
+    <Setter Property="MinHeight" Value="21" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Cursor" Value="Arrow" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <c:Bevel Name="PART_Bevel" Classes="raised" Padding="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            TextElement.FontSize="{TemplateBinding FontSize}"
+                            TextElement.FontWeight="{TemplateBinding FontWeight}" />
+        </c:Bevel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ c|Bevel#PART_Bevel">
+    <Setter Property="Background" Value="{DynamicResource Face2}" />
+  </Style>
+
+  <!-- Pressed inverts the bevel. In the mocks this is also the *latched* look for
+       an active tool or a running transport, which is why it is a class too. -->
+  <Style Selector="Button:pressed /template/ c|Bevel#PART_Bevel">
+    <Setter Property="Background" Value="{DynamicResource Press}" />
+    <Setter Property="TopBrush" Value="{DynamicResource SunkBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource SunkBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource SunkBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource SunkBorderLeft}" />
+    <Setter Property="Shadow" Value="{DynamicResource SunkShadow}" />
+  </Style>
+
+  <Style Selector="Button.latched /template/ c|Bevel#PART_Bevel">
+    <Setter Property="Background" Value="{DynamicResource Press}" />
+    <Setter Property="TopBrush" Value="{DynamicResource SunkBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource SunkBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource SunkBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource SunkBorderLeft}" />
+    <Setter Property="Shadow" Value="{DynamicResource SunkShadow}" />
+  </Style>
+
+  <!-- The classic default-button ring sits *outside* the bevel. -->
+  <Style Selector="Button.default">
+    <Setter Property="FontWeight" Value="Bold" />
+  </Style>
+  <Style Selector="Button.default /template/ c|Bevel#PART_Bevel">
+    <Setter Property="Shadow" Value="0 0 0 1 #FF000000" />
+  </Style>
+
+  <Style Selector="Button.tool">
+    <Setter Property="Width" Value="23" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.5" />
+  </Style>
+
+  <!-- ── menu bar item ───────────────────────────────────────────────────── -->
+  <Style Selector="Button.menu">
+    <Setter Property="Padding" Value="9,0" />
+    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Bg" Background="Transparent" Padding="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button.menu:pointerover /template/ Border#PART_Bg">
+    <Setter Property="Background" Value="{DynamicResource Selection}" />
+  </Style>
+  <Style Selector="Button.menu:pointerover TextBlock">
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+
+  <!-- ── mode tab ────────────────────────────────────────────────────────── -->
+  <Style Selector="Button.tab">
+    <Setter Property="Padding" Value="13,2,13,3" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <c:Bevel Name="PART_Bevel" Background="{DynamicResource Face2}"
+                 TopBrush="{DynamicResource TabBorderTop}"
+                 RightBrush="{DynamicResource TabBorderRight}"
+                 BottomBrush="{DynamicResource TabBorderBottom}"
+                 LeftBrush="{DynamicResource TabBorderLeft}"
+                 Padding="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+        </c:Bevel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button.tab.active">
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Padding" Value="13,3,13,4" />
+    <Setter Property="ZIndex" Value="2" />
+  </Style>
+  <Style Selector="Button.tab.active /template/ c|Bevel#PART_Bevel">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+    <Setter Property="BottomBrush" Value="{x:Null}" />
+  </Style>
+
+  <!-- ── panel caption bar ───────────────────────────────────────────────── -->
+  <Style Selector="c|Bevel.caption">
+    <Setter Property="Background" Value="{DynamicResource PanelCaption}" />
+    <Setter Property="EdgeThickness" Value="0" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="Height" Value="19" />
+  </Style>
+  <Style Selector="c|Bevel.caption TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource PanelCaptionFg}" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!-- ── window title bar ────────────────────────────────────────────────── -->
+  <Style Selector="c|Bevel.titlebar">
+    <Setter Property="Background" Value="{DynamicResource TitleBar}" />
+    <Setter Property="EdgeThickness" Value="0" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="Padding" Value="4,0" />
+  </Style>
+  <Style Selector="c|Bevel.titlebar TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TitleBarFg}" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <!-- ── text field ──────────────────────────────────────────────────────── -->
+  <Style Selector="TextBox">
+    <Setter Property="MinHeight" Value="19" />
+    <Setter Property="Padding" Value="4,1" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="CaretBrush" Value="Black" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <c:Bevel Classes="sunken" Padding="{TemplateBinding Padding}">
+          <Panel>
+            <TextBlock Text="{TemplateBinding Watermark}" Foreground="#8a8a8a"
+                       FontSize="{TemplateBinding FontSize}" VerticalAlignment="Center"
+                       IsVisible="{Binding !!!Text.Length, RelativeSource={RelativeSource TemplatedParent}}" />
+            <TextPresenter Name="PART_TextPresenter"
+                           Text="{TemplateBinding Text, Mode=TwoWay}"
+                           CaretBrush="{TemplateBinding CaretBrush}"
+                           SelectionBrush="{DynamicResource Selection}"
+                           SelectionForegroundBrush="White"
+                           VerticalAlignment="Center" />
+          </Panel>
+        </c:Bevel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- ── status bar cell ─────────────────────────────────────────────────── -->
+  <Style Selector="c|Bevel.statuscell">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+    <Setter Property="TopBrush" Value="{DynamicResource SunkBorderTop}" />
+    <Setter Property="RightBrush" Value="{DynamicResource SunkBorderRight}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource SunkBorderBottom}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource SunkBorderLeft}" />
+    <Setter Property="Padding" Value="7,0" />
+  </Style>
+
+  <!-- ── separators that follow the two-tone rule ────────────────────────── -->
+  <Style Selector="c|Bevel.vdivider">
+    <Setter Property="Background" Value="{x:Null}" />
+    <Setter Property="EdgeThickness" Value="1" />
+    <Setter Property="Width" Value="2" />
+    <Setter Property="TopBrush" Value="{x:Null}" />
+    <Setter Property="BottomBrush" Value="{x:Null}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource Shad}" />
+    <Setter Property="RightBrush" Value="{DynamicResource Lite}" />
+  </Style>
+
+</Styles>
