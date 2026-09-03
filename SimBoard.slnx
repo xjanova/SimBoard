@@ -3,9 +3,13 @@
     <Project Path="spikes/S1.NgspiceSidecar/S1.NgspiceSidecar.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/SimBoard.Parts/SimBoard.Parts.csproj" />
     <Project Path="src/SimBoard.Spice/SimBoard.Spice.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SimBoard.Spice.Tests/SimBoard.Spice.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/SimBoard.Xref/SimBoard.Xref.csproj" />
   </Folder>
 </Solution>
