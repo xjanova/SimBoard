@@ -357,4 +357,43 @@
     <Setter Property="Padding" Value="12" />
   </Style>
 
+  <!-- ── dialog caption + window close, as classes so code never resolves resources
+         by hand. DynamicResource belongs in XAML where it is declarative. ──────── -->
+  <Style Selector="c|Bevel.dialogcaption">
+    <Setter Property="Background" Value="{DynamicResource DialogTitleBar}" />
+    <Setter Property="EdgeThickness" Value="0" />
+    <Setter Property="Height" Value="19" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource WindowRadius}" />
+  </Style>
+  <Style Selector="c|Bevel.dialogcaption TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TitleBarFg}" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.windowclose">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="14" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <c:Bevel Background="{DynamicResource CloseBg}"
+                 CornerRadius="{DynamicResource WindowButtonRadius}"
+                 TopBrush="{DynamicResource CloseBorderTop}"
+                 RightBrush="{DynamicResource CloseBorderRight}"
+                 BottomBrush="{DynamicResource CloseBorderBottom}"
+                 LeftBrush="{DynamicResource CloseBorderLeft}">
+          <TextBlock Text="&#x2715;" FontSize="8" HorizontalAlignment="Center"
+                     VerticalAlignment="Center" Foreground="{DynamicResource CloseFg}" />
+        </c:Bevel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="c|Bevel.windowframe">
+    <Setter Property="CornerRadius" Value="{DynamicResource WindowRadius}" />
+  </Style>
+
 </Styles>

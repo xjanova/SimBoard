@@ -47,11 +47,27 @@ public partial class MainWindow : Window
         if (openIndex >= 0 && openIndex + 1 < args.Length)
         {
             var what = args[openIndex + 1];
-            Opened += (_, _) =>
-            {
-                if (what.Equals("settings", StringComparison.OrdinalIgnoreCase)) OpenSettings();
-            };
+            Opened += (_, _) => Open(what);
         }
+        else
+        {
+            Opened += (_, _) => ShowInWorkspace("schematic");
+        }
+    }
+
+    /// <summary>Routes a screen name to wherever the spec says that screen lives.</summary>
+    private void Open(string name)
+    {
+        if (name.Equals("settings", StringComparison.OrdinalIgnoreCase)) { OpenSettings(); return; }
+        if (ScreenHost.Modal(this, name) is not null) return;
+        ShowInWorkspace(name);
+    }
+
+    private void ShowInWorkspace(string name)
+    {
+        var host = this.FindControl<Bevel>("WorkspaceHost");
+        if (host is null) return;
+        host.Child = ScreenHost.Workspace(name) ?? Placeholder(name);
     }
 
     private AppState State => (AppState)DataContext!;
@@ -62,7 +78,23 @@ public partial class MainWindow : Window
         foreach (var key in MenuKeys)
         {
             var b = new Button { Classes = { "menu" }, Content = Bound(key) };
-            if (key == Keys.MTools) b.Click += (_, _) => OpenSettings();
+
+            // Until real dropdowns land, each menu opens the screen it owns. Every screen
+            // in the spec is reachable from the menu bar, which is what "clickable" means
+            // before the behaviour behind it exists.
+            var target = key switch
+            {
+                var k when k == Keys.MFile => "start",
+                var k when k == Keys.MView => "library",
+                var k when k == Keys.MPlace => "library",
+                var k when k == Keys.MSim => "sim",
+                var k when k == Keys.MTools => "settings",
+                var k when k == Keys.MBoard => "import",
+                var k when k == Keys.MWin => "instruments",
+                var k when k == Keys.MEdit => "layers",
+                _ => null,
+            };
+            if (target is not null) b.Click += (_, _) => Open(target);
             host.Children.Add(b);
         }
     }
@@ -219,7 +251,20 @@ public partial class MainWindow : Window
     {
         for (int i = 0; i < _modeTabs.Count; i++)
             SetClass(_modeTabs[i], "active", i == State.Mode);
+
+        // The tabs are four views of one project, so switching them swaps the workspace
+        // rather than opening anything — the netlist is shared, per the spec.
+        if (IsLoaded) ShowInWorkspace(ScreenHost.ForMode(State.Mode));
     }
+
+    /// <summary>Shown for a screen that has no builder yet — never a blank panel.</summary>
+    private static Control Placeholder(string name) => new TextBlock
+    {
+        Text = $"— {name} —",
+        Foreground = new SolidColorBrush(Color.Parse("#7f97ab")),
+        HorizontalAlignment = HorizontalAlignment.Center,
+        VerticalAlignment = VerticalAlignment.Center,
+    };
 
     private void RefreshTransport()
     {

@@ -11,7 +11,7 @@ public static class Strings
 {
     private static readonly Dictionary<string, (string Th, string En)> Table = new()
     {
-        ["winTitle"] = ("555-astable-reg.ebp — แผ่นที่ 1", "555-astable-reg.ebp — Sheet 1"),
+        ["winTitle"] = ("555-astable-reg.sbp — แผ่นที่ 1", "555-astable-reg.sbp — Sheet 1"),
         ["nvStart"] = ("เริ่มโปรแกรม", "Start"),
         ["nvSchem"] = ("ออกแบบวงจร", "Schematic"),
         ["nvLib"] = ("คลังอุปกรณ์", "Library"),

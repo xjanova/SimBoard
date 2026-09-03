@@ -9,8 +9,12 @@ obj/
 # local logo build scratch (font is downloaded, not vendored)
 .build/
 
-# ngspice sidecar binary — fetched by tools/fetch-ngspice.ps1, not committed
-tools/ngspice/
+# ngspice engine — fetched by tools/fetch-ngspice.ps1, never committed.
+# The archive unpacks to tools/Spice64/, NOT tools/ngspice/ — the earlier pattern
+# matched nothing and 56 MB of third-party binaries went into the history.
+tools/Spice64/
+tools/*.7z
+tools/*.zip
 
 # sim scratch
 *.raw

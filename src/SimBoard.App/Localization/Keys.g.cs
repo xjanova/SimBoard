@@ -4,7 +4,7 @@ namespace SimBoard.App.Localization;
 /// <summary>Compile-checked names for every UI string.</summary>
 public static class Keys
 {
-    /// <summary>555-astable-reg.ebp — แผ่นที่ 1</summary>
+    /// <summary>555-astable-reg.sbp — แผ่นที่ 1</summary>
     public const string WinTitle = "winTitle";
     /// <summary>เริ่มโปรแกรม</summary>
     public const string NvStart = "nvStart";
