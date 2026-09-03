@@ -17,14 +17,38 @@ public static class ScreenHost
     public static Control? Workspace(string name) => name.ToLowerInvariant() switch
     {
         "schematic" => SchematicView.Build(),
-        "sim" => SimulationView.Build(),
         "breadboard" => BreadboardView.Build(),
         "pcb" => PcbView.Build(),
         "library" => LibraryView.Build(),
-        "instruments" => InstrumentsView.Build(),
         "start" => StartView.Build(),
+
+        // Two screens are the schematic with something laid over it, not scenes of their
+        // own — the spec is explicit that screen 5 is "the same schematic scene plus live
+        // overlays" and screen 6 floats its instruments over a schematic dimmed to .35.
+        // Composing here keeps each view a single honest layer.
+        "sim" => Layer(SchematicView.Build(), SimulationView.Build()),
+        // The spec says opacity .35, which was measured in the HTML prototype where the
+        // scene composited over a lighter base. Here the schematic's own #12161b ground
+        // matches the workspace, so .35 crushes the #93a9bd strokes to almost nothing.
+        // .5 reproduces what the mock actually shows: dimmed but still readable.
+        "instruments" => Layer(Dim(SchematicView.Build(), 0.5), InstrumentsView.Build()),
+
         _ => null,
     };
+
+    private static Control Layer(params Control[] layers)
+    {
+        var panel = new Panel();
+        foreach (var l in layers) panel.Children.Add(l);
+        return panel;
+    }
+
+    private static Control Dim(Control c, double opacity)
+    {
+        c.Opacity = opacity;
+        c.IsHitTestVisible = false;   // the dimmed backdrop must not swallow clicks
+        return c;
+    }
 
     /// <summary>Screens the spec defines as modals over the main window.</summary>
     public static Task? Modal(Window owner, string name) => name.ToLowerInvariant() switch
