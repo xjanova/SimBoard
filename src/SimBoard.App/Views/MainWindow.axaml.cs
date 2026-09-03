@@ -37,6 +37,21 @@ public partial class MainWindow : Window
         BuildStatusBar();
         WireWindowButtons();
         KeyDown += OnKeyDown;
+
+        // Deterministic entry for screenshot verification: `--open settings` opens that
+        // dialog once the window is up. Hunting menu coordinates from a screen capture
+        // breaks every time the window lands somewhere new, and silently verifies the
+        // wrong thing when the click misses.
+        var args = Environment.GetCommandLineArgs();
+        var openIndex = Array.IndexOf(args, "--open");
+        if (openIndex >= 0 && openIndex + 1 < args.Length)
+        {
+            var what = args[openIndex + 1];
+            Opened += (_, _) =>
+            {
+                if (what.Equals("settings", StringComparison.OrdinalIgnoreCase)) OpenSettings();
+            };
+        }
     }
 
     private AppState State => (AppState)DataContext!;
@@ -45,7 +60,11 @@ public partial class MainWindow : Window
     {
         var host = this.FindControl<StackPanel>("MenuHost")!;
         foreach (var key in MenuKeys)
-            host.Children.Add(new Button { Classes = { "menu" }, Content = Bound(key) });
+        {
+            var b = new Button { Classes = { "menu" }, Content = Bound(key) };
+            if (key == Keys.MTools) b.Click += (_, _) => OpenSettings();
+            host.Children.Add(b);
+        }
     }
 
     private void BuildToolbar()
@@ -161,6 +180,12 @@ public partial class MainWindow : Window
         };
     }
 
+    private async void OpenSettings()
+    {
+        try { await new Dialogs.SettingsDialog().ShowDialog(this); }
+        catch (InvalidOperationException) { /* already open */ }
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         // Ctrl+Shift+L is the language toggle the spec specifies.
@@ -169,7 +194,12 @@ public partial class MainWindow : Window
             State.Lang = State.Lang == Lang.Th ? Lang.En : Lang.Th;
             e.Handled = true;
         }
-        // Temporary until the Appearance tab lands: cycle chrome to eyeball all seven.
+        else if (e.Key == Key.OemComma && e.KeyModifiers == KeyModifiers.Control)
+        {
+            OpenSettings();
+            e.Handled = true;
+        }
+        // Still handy while building screens: cycle chrome without opening the dialog.
         else if (e.Key == Key.T && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
         {
             var all = Enum.GetValues<ChromeTheme>();

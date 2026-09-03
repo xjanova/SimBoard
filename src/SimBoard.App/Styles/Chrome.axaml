@@ -260,4 +260,101 @@
     <Setter Property="RightBrush" Value="{DynamicResource Lite}" />
   </Style>
 
+  <!-- ── CheckBox · 13x13 sunken box, tick drawn in the control colour ────── -->
+  <Style Selector="CheckBox">
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent">
+          <c:Bevel Classes="sunken" Width="13" Height="13" VerticalAlignment="Center"
+                   CornerRadius="0">
+            <TextBlock Name="PART_Tick" Text="&#x2713;" FontSize="10" FontWeight="Bold"
+                       Foreground="#111" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Margin="0,-1,0,0" IsVisible="False" />
+          </c:Bevel>
+          <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="CheckBox:checked /template/ TextBlock#PART_Tick">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <!-- ── RadioButton · sunken well with a filled centre when selected ─────── -->
+  <Style Selector="RadioButton">
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent">
+          <c:Bevel Classes="sunken" Width="13" Height="13" VerticalAlignment="Center"
+                   CornerRadius="7">
+            <Ellipse Name="PART_Dot" Width="5" Height="5" Fill="#111"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" />
+          </c:Bevel>
+          <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton:checked /template/ Ellipse#PART_Dot">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <!-- ── ComboBox · in the mocks this is a sunken field plus a 15x17 stub ─── -->
+  <Style Selector="ComboBox">
+    <Setter Property="MinHeight" Value="19" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Padding" Value="5,1" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <c:Bevel Classes="sunken face" Padding="0">
+          <Grid ColumnDefinitions="*,15">
+            <ContentControl Grid.Column="0" Margin="5,1"
+                            Content="{TemplateBinding SelectionBoxItem}"
+                            VerticalAlignment="Center" />
+            <c:Bevel Grid.Column="1" Classes="raised" Margin="1">
+              <TextBlock Text="&#x25BC;" FontSize="7" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </c:Bevel>
+            <Popup Name="PART_Popup" Grid.Column="0"
+                   IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                   PlacementTarget="{TemplateBinding}" IsLightDismissEnabled="True">
+              <c:Bevel Classes="raised" Padding="1" MinWidth="120">
+                <ItemsPresenter Name="PART_ItemsPresenter" />
+              </c:Bevel>
+            </Popup>
+          </Grid>
+        </c:Bevel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ComboBoxItem">
+    <Setter Property="Padding" Value="6,2" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Bg" Background="Transparent" Padding="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Content}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ComboBoxItem:pointerover /template/ Border#PART_Bg">
+    <Setter Property="Background" Value="{DynamicResource Selection}" />
+  </Style>
+  <Style Selector="ComboBoxItem:pointerover TextBlock">
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+
+  <!-- ── group box: a sunken well that holds a tab body ──────────────────── -->
+  <Style Selector="c|Bevel.groupbox">
+    <Setter Property="Background" Value="{DynamicResource Face}" />
+    <Setter Property="TopBrush" Value="{DynamicResource Lite}" />
+    <Setter Property="LeftBrush" Value="{DynamicResource Lite}" />
+    <Setter Property="RightBrush" Value="{DynamicResource Shad}" />
+    <Setter Property="BottomBrush" Value="{DynamicResource Shad}" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+
 </Styles>

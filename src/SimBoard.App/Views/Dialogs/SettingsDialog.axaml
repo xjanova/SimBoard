@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:SimBoard.App.Controls"
+        xmlns:app="using:SimBoard.App"
+        x:Class="SimBoard.App.Views.Dialogs.SettingsDialog"
+        Width="680" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        Title="Preferences">
+
+  <c:Bevel Classes="raised" CornerRadius="{DynamicResource WindowRadius}">
+    <DockPanel LastChildFill="True">
+
+      <!-- caption uses the dialog title bar token (tb2), not the window one -->
+      <c:Bevel DockPanel.Dock="Top" Name="CaptionArea" Height="19" Padding="6,0"
+               EdgeThickness="0" Background="{DynamicResource DialogTitleBar}"
+               CornerRadius="{DynamicResource WindowRadius}">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" FontWeight="Bold"
+                     Foreground="{DynamicResource TitleBarFg}" VerticalAlignment="Center"
+                     Text="{Binding [setTitle], Source={x:Static app:L.I}}" />
+          <Button Grid.Column="1" Name="CloseBtn" Width="16" Height="14" Padding="0" MinHeight="0">
+            <Button.Template>
+              <ControlTemplate>
+                <c:Bevel Background="{DynamicResource CloseBg}"
+                         CornerRadius="{DynamicResource WindowButtonRadius}"
+                         TopBrush="{DynamicResource CloseBorderTop}"
+                         RightBrush="{DynamicResource CloseBorderRight}"
+                         BottomBrush="{DynamicResource CloseBorderBottom}"
+                         LeftBrush="{DynamicResource CloseBorderLeft}">
+                  <TextBlock Text="✕" FontSize="8" HorizontalAlignment="Center"
+                             VerticalAlignment="Center" Foreground="{DynamicResource CloseFg}" />
+                </c:Bevel>
+              </ControlTemplate>
+            </Button.Template>
+          </Button>
+        </Grid>
+      </c:Bevel>
+
+      <!-- footer -->
+      <c:Bevel DockPanel.Dock="Bottom" Classes="flat" Padding="10,8">
+        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+          <Button Name="OkBtn" Classes="default" MinWidth="88" Height="23"
+                  Content="{Binding [bOk], Source={x:Static app:L.I}}" />
+          <Button Name="CancelBtn" MinWidth="88" Height="23"
+                  Content="{Binding [bCancel], Source={x:Static app:L.I}}" />
+          <Button Name="ApplyBtn" MinWidth="88" Height="23"
+                  Content="{Binding [bApply], Source={x:Static app:L.I}}" />
+        </StackPanel>
+      </c:Bevel>
+
+      <!-- tab strip + body -->
+      <c:Bevel Classes="flat" Padding="10,8,10,0">
+        <DockPanel LastChildFill="True">
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="1"
+                      Name="TabHost" VerticalAlignment="Bottom" />
+          <c:Bevel Classes="groupbox" Name="TabBody" MinHeight="330" />
+        </DockPanel>
+      </c:Bevel>
+    </DockPanel>
+  </c:Bevel>
+</Window>
