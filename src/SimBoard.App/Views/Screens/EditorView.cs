@@ -23,6 +23,14 @@ public static class EditorView
     {
         var doc = SampleCircuit();
         var canvas = new SchematicCanvas { Document = doc };
+        var scope = new ScopeView();
+        SimulationResult? lastRun = null;
+
+        canvas.NetProbed += (_, netName) =>
+        {
+            if (lastRun?[netName] is not { } signal) return;
+            scope.Toggle(netName, signal);
+        };
 
         var props = new StackPanel { Spacing = 4 };
         var report = new StackPanel { Spacing = 3 };
@@ -45,12 +53,20 @@ public static class EditorView
         Grid.SetColumn(left, 0);
 
         var centre = new DockPanel { LastChildFill = true, Margin = new Thickness(6, 0) };
-        var bar = Toolbar(canvas, report, status);
+        var bar = Toolbar(canvas, scope, report, status, r => lastRun = r);
         DockPanel.SetDock(bar, Dock.Top);
         centre.Children.Add(bar);
         var statusRow = new Bevel { Classes = { "flat" }, Padding = new Thickness(6, 2), Child = status };
         DockPanel.SetDock(statusRow, Dock.Bottom);
         centre.Children.Add(statusRow);
+        var scopeFrame = new Bevel
+        {
+            Classes = { "workspace" },
+            Margin = new Thickness(0, 4, 0, 0),
+            Child = scope,
+        };
+        DockPanel.SetDock(scopeFrame, Dock.Bottom);
+        centre.Children.Add(scopeFrame);
         centre.Children.Add(new Bevel { Classes = { "workspace" }, Child = canvas });
         Grid.SetColumn(centre, 1);
 
@@ -69,11 +85,13 @@ public static class EditorView
     private static CircuitDocument SampleCircuit()
     {
         var doc = new CircuitDocument { Title = "led-driver" };
-        var v1 = doc.Place(PartCatalog.Require("VDC"), new GridPoint(2, 6));
+        var v1 = doc.Place(PartCatalog.Require("VPULSE"), new GridPoint(2, 6));
         var r1 = doc.Place(PartCatalog.Require("R"), new GridPoint(10, 3));
         var led = doc.Place(PartCatalog.Require("LED"), new GridPoint(20, 3));
         var gnd = doc.Place(PartCatalog.Require("GND"), new GridPoint(10, 16));
-        v1.Value = "5";
+        // A pulse rather than a flat supply: the scope has to have something to draw,
+        // and a blinking LED is the circuit everyone builds first anyway.
+        v1.Value = "PULSE(0 5 0 10u 10u 400u 1m)";
         r1.Value = "330";
 
         Wire(doc, v1, "1", r1, "1");
@@ -187,7 +205,9 @@ public static class EditorView
         };
     }
 
-    private static Control Toolbar(SchematicCanvas canvas, StackPanel report, TextBlock status)
+    private static Control Toolbar(
+        SchematicCanvas canvas, ScopeView scope, StackPanel report, TextBlock status,
+        Action<SimulationResult?> keepRun)
     {
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
         var buttons = new List<(Button B, EditorTool T)>();
@@ -196,6 +216,7 @@ public static class EditorView
                  {
                      (EditorTool.Select, "✛", "เลือก / ย้าย"),
                      (EditorTool.Wire, "⌁", "ต่อสาย"),
+                     (EditorTool.Probe, "⌖", "จับสัญญาณ — คลิกเนตเพื่อดูรูปคลื่น"),
                      (EditorTool.Delete, "⌫", "ลบ"),
                  })
         {
@@ -237,7 +258,7 @@ public static class EditorView
         {
             play.IsEnabled = false;
             status.Text = "กำลังจำลอง…";
-            try { await Simulate(canvas, report, status); }
+            try { await Simulate(canvas, scope, report, status, keepRun); }
             finally { play.IsEnabled = true; }
         };
 
@@ -443,7 +464,9 @@ public static class EditorView
             });
     }
 
-    private static async Task Simulate(SchematicCanvas canvas, StackPanel report, TextBlock status)
+    private static async Task Simulate(
+        SchematicCanvas canvas, ScopeView scope, StackPanel report, TextBlock status,
+        Action<SimulationResult?> keepRun)
     {
         var doc = canvas.Document;
         var built = NetlistBuilder.Build(doc, Analysis.Transient(1e-6, 2e-3));
@@ -453,6 +476,8 @@ public static class EditorView
         {
             foreach (var b in built.Blockers)
                 report.Children.Add(Warn(b, "#8a2b22"));
+            keepRun(null);
+            scope.SetTime(null);
             status.Text = "ซิมไม่ได้";
             return;
         }
@@ -467,22 +492,39 @@ public static class EditorView
                 FontWeight = FontWeight.Bold,
             });
 
-            var volts = new Dictionary<string, double>();
+            var readings = new Dictionary<string, NetReading>();
             foreach (var net in built.Nets.Where(n => !n.IsGround))
             {
                 var v = result[net.SpiceName];
                 if (v is null || v.Count == 0) continue;
-                volts[net.SpiceName] = v.Values[^1];
+
+                var reading = NetReading.From(v.Values);
+                readings[net.SpiceName] = reading;
                 report.Children.Add(new TextBlock
                 {
                     Classes = { "mono" },
-                    Text = $"{net.Name,-8} {v.Values[^1],8:0.000} V   " +
+                    Text = $"{net.Name,-8} {reading.Label,14}   " +
                            string.Join(", ", net.Connections.Take(3).Select(c => $"{c.Part.Designator}.{c.Pin.Name}")),
                 });
             }
 
             // Put the answer on the sheet, not only in the panel.
-            canvas.ShowResults(built.Nets, volts);
+            canvas.ShowResults(built.Nets, readings);
+
+            // The scope keeps whatever was already probed and re-points it at this run,
+            // so pressing Play twice compares the same signals rather than clearing them.
+            keepRun(result);
+            scope.SetTime(result["time"]);
+            scope.Rebind(name => result[name]);
+
+            // A scope that shows nothing after a run is not useful. With nothing probed
+            // yet, start on the two nets that moved most — which are almost always the
+            // ones worth looking at — and let the probe tool take it from there.
+            if (scope.Traces.Count == 0)
+                foreach (var net in readings.Where(r => r.Value.Swing > 1e-6)
+                             .OrderByDescending(r => r.Value.Swing)
+                             .Take(2))
+                    if (result[net.Key] is { } signal) scope.Toggle(net.Key, signal);
 
             foreach (var a in built.Approximations)
                 report.Children.Add(Warn(a, "#8a6420"));

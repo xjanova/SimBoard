@@ -6,7 +6,7 @@ using SimBoard.Document;
 
 namespace SimBoard.App.Controls;
 
-public enum EditorTool { Select, Wire, Place, Delete }
+public enum EditorTool { Select, Wire, Place, Delete, Probe }
 
 /// <summary>
 /// The schematic editor surface: draws a <see cref="CircuitDocument"/> and edits it.
@@ -46,6 +46,9 @@ public class SchematicCanvas : Control
     /// <summary>Raised when the selected part changes, so the properties panel can follow.</summary>
     public event EventHandler<PartInstance?>? SelectionChanged;
 
+    /// <summary>Raised when the probe tool picks a net. Carries the SPICE node name.</summary>
+    public event EventHandler<string>? NetProbed;
+
     public SchematicCanvas()
     {
         Focusable = true;
@@ -81,14 +84,14 @@ public class SchematicCanvas : Control
     public EditHistory History => _history;
 
     private IReadOnlyList<Net>? _resultNets;
-    private IReadOnlyDictionary<string, double>? _voltages;
+    private IReadOnlyDictionary<string, NetReading>? _voltages;
 
     /// <summary>
     /// Shows the last simulation on the sheet itself. The numbers are drawn on the nets
     /// they belong to, because a voltage in a side panel makes you match names by eye;
     /// on the wire it is simply where you are already looking.
     /// </summary>
-    public void ShowResults(IReadOnlyList<Net> nets, IReadOnlyDictionary<string, double> voltages)
+    public void ShowResults(IReadOnlyList<Net> nets, IReadOnlyDictionary<string, NetReading> voltages)
     {
         _resultNets = nets;
         _voltages = voltages;
@@ -230,13 +233,13 @@ public class SchematicCanvas : Control
 
         foreach (var net in _resultNets)
         {
-            if (net.IsGround || !_voltages.TryGetValue(net.SpiceName, out var volts)) continue;
+            if (net.IsGround || !_voltages.TryGetValue(net.SpiceName, out var reading)) continue;
             if (net.Points.Count == 0) continue;
 
             // Anchor on the topmost-leftmost point of the net, so the tag sits at a
             // predictable end of the run instead of wherever the hash happened to order.
             var at = net.Points.OrderBy(q => q.Y).ThenBy(q => q.X).First();
-            var text = SymbolRenderer.Text($"{volts:0.000} V", Math.Max(9, _step * 1.05), SymbolRenderer.Selected);
+            var text = SymbolRenderer.Text(reading.Label, Math.Max(9, _step * 1.05), SymbolRenderer.Selected);
             var p = ToPixel(at);
             var box = new Rect(p.X + _step * 0.4, p.Y - text.Height - _step * 0.2,
                                text.Width + 6, text.Height + 2);
@@ -295,6 +298,14 @@ public class SchematicCanvas : Control
 
             case EditorTool.Delete:
                 DeleteAt(_cursor);
+                break;
+
+            case EditorTool.Probe:
+                // Probing is a question about the circuit, so it asks the extractor
+                // rather than a cached list — the answer is always about what is
+                // currently drawn.
+                var net = _doc.ExtractNets().FirstOrDefault(n => n.Points.Contains(_cursor));
+                if (net is not null) NetProbed?.Invoke(this, net.SpiceName);
                 break;
 
             default:
