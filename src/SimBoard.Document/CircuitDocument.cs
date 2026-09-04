@@ -54,12 +54,16 @@ public sealed class PartInstance
             _ => (0, 0),
         };
 
+        // Cells run 0..w-1 and 0..h-1; a pin sits one outside, at -1 or at w/h.
+        // The reflection must therefore be (size-1) - coordinate, so -1 maps to w and
+        // w maps to -1. Using (size - coordinate) sends w to 0, which is the body's own
+        // edge cell — pins of a rotated part then landed inside their own symbol.
         return Rotation switch
         {
             Rotation.R0 => (x, y),
-            Rotation.R90 => (h - y, x),
-            Rotation.R180 => (w - x, h - y),
-            Rotation.R270 => (y, w - x),
+            Rotation.R90 => (h - 1 - y, x),
+            Rotation.R180 => (w - 1 - x, h - 1 - y),
+            Rotation.R270 => (y, w - 1 - x),
             _ => (x, y),
         };
     }
@@ -263,22 +267,40 @@ public sealed class CircuitDocument
                 (pinsAt.TryGetValue(at, out var list) ? list : pinsAt[at] = []).Add((part, pin));
             }
 
-        // A label forces its point into whatever net it sits on, and names it.
-        var labelAt = Labels.ToDictionary(l => l.At, l => l.Name);
-        foreach (var l in Labels) Find(l.At);
+        // Labels sharing a name are one net, wherever they sit. That is what a net label
+        // means on every schematic, and it is the only way a netlist with no geometry can
+        // be imported at all — an imported circuit knows what connects to what and
+        // nothing whatsoever about where the wires ran.
+        var labelAt = new Dictionary<GridPoint, string>();
+        foreach (var group in Labels.GroupBy(l => l.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            GridPoint? anchor = null;
+            foreach (var l in group)
+            {
+                Find(l.At);
+                labelAt[l.At] = l.Name;
+                if (anchor is { } a) Union(a, l.At);
+                else anchor = l.At;
+            }
+        }
 
+        // Ordered by the topmost-leftmost point in each group, so N001, N002 ... are
+        // stable. Dictionary enumeration order is not contractual, and a net name that
+        // shifts between runs would silently re-point every scope trace and saved probe.
         var groups = parent.Keys
             .GroupBy(Find)
-            .Where(g => g.Any(p => pinsAt.ContainsKey(p)));   // a wire touching nothing is not a net
+            .Where(g => g.Any(p => pinsAt.ContainsKey(p)))
+            .Select(g => g.OrderBy(q => q.Y).ThenBy(q => q.X).ToList())
+            .OrderBy(g => g[0].Y).ThenBy(g => g[0].X);
 
         var nets = new List<Net>();
         int auto = 0;
-        foreach (var g in groups)
+        foreach (var points in groups)
         {
-            var points = g.ToList();
             var connections = points
                 .SelectMany(p => pinsAt.TryGetValue(p, out var l) ? l : [])
                 .ToList();
+
 
             bool isGround = connections.Any(c => c.Item2.Kind == PinKind.Ground);
             string? named = points.Select(p => labelAt.GetValueOrDefault(p)).FirstOrDefault(n => n is not null);

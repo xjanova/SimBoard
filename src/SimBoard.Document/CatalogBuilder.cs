@@ -30,7 +30,7 @@ public static class CatalogBuilder
     /// they are different facts and conflating them is how legs get bent the wrong way.
     /// </summary>
     public static PartDefinition Bjt(
-        string mpn, string nameTh, Polarity polarity, string package, string pinout,
+        string mpn, string nameTh, Polarity polarity, string package, string? pinout,
         double vceo, double ic, double ptot, double hfeMin, double hfeMax, double ft,
         string spiceModel, Provenance provenance = Provenance.Unverified,
         string? note = null, double? vebo = null, double? vceSat = null) => new()
@@ -63,7 +63,7 @@ public static class CatalogBuilder
     };
 
     public static PartDefinition Mosfet(
-        string mpn, string nameTh, Polarity channel, string package, string pinout,
+        string mpn, string nameTh, Polarity channel, string package, string? pinout,
         double vds, double id, double rdsOn, double vgsThMax, double ptot,
         string spiceModel, Provenance provenance = Provenance.Unverified,
         string? note = null, double? qg = null) => new()

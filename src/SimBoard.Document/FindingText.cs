@@ -36,6 +36,9 @@ public static class FindingText
             $"อัตราขยายต่ำกว่า (hFE ต่ำสุด {f.Args[0]} เทียบกับ {f.Args[1]}) — วงจรสวิตช์อาจอิ่มตัวไม่พอ ร้อนขึ้น",
         FindingCode.GainHigher =>
             $"อัตราขยายสูงกว่ามาก (hFE สูงสุด {f.Args[0]} เทียบกับ {f.Args[1]}) — ภาคขยายอาจแกว่ง ต้องปรับไบแอส",
+        FindingCode.PinoutUnknown =>
+            $"⚠ ยังไม่ได้ยืนยันลำดับขาของ {f.Args[0]} — ต้องดูดาต้าชีตหรือวัดด้วยมิเตอร์ก่อนใส่ " +
+            "อย่าเดาจากตัวถัง ตัวถังเดียวกันมีหลายลำดับขา",
         FindingCode.DifferentPinout =>
             $"⚠ ขาไม่เหมือนกัน — ตัวนี้เป็น {f.Args[0]} ของเดิมเป็น {f.Args[1]} ต้องบิดขาก่อนใส่ ไม่งั้นพังทันที",
         FindingCode.DifferentPackage =>
@@ -69,6 +72,9 @@ public static class FindingText
             $"Lower gain (hFE min {f.Args[0]} vs {f.Args[1]}) — a switching stage may not saturate fully and will run hotter",
         FindingCode.GainHigher =>
             $"Much higher gain (hFE max {f.Args[0]} vs {f.Args[1]}) — an amplifier stage may oscillate; rebias it",
+        FindingCode.PinoutUnknown =>
+            $"⚠ Lead order of {f.Args[0]} is not verified — read the datasheet or meter it before fitting. " +
+            "Do not infer it from the package; one package has several conventions",
         FindingCode.DifferentPinout =>
             $"⚠ Different pinout — this is {f.Args[0]}, the original is {f.Args[1]}. Bend the legs before fitting, or it dies on power-up",
         FindingCode.DifferentPackage =>

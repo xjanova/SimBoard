@@ -66,6 +66,8 @@ public static class NetlistBuilder
         string Node(PartInstance p, string pinNumber) =>
             nodeOf.TryGetValue((p.Id, pinNumber), out var n) ? n : $"nc_{p.Designator}_{pinNumber}";
 
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var part in doc.Parts.OrderBy(p => p.Designator, StringComparer.Ordinal))
         {
             var def = part.Definition;
@@ -77,7 +79,7 @@ public static class NetlistBuilder
                     break;   // ground symbols and connectors carry no element of their own
 
                 case SpiceKind.Primitive:
-                    EmitPrimitive(body, part, def, value, Node, models, approximations);
+                    EmitPrimitive(body, part, def, value, Node, models, approximations, usedNames);
                     break;
 
                 case SpiceKind.Subcircuit:
@@ -111,37 +113,72 @@ public static class NetlistBuilder
 
     private static void EmitPrimitive(
         StringBuilder b, PartInstance part, PartDefinition def, string value,
-        Func<PartInstance, string, string> node, HashSet<string> models, List<string> approx)
+        Func<PartInstance, string, string> node, HashSet<string> models, List<string> approx,
+        HashSet<string> usedNames)
     {
         string N(string pin) => node(part, pin);
 
+        // SPICE identifies an element by its first letter, so the name has to start with
+        // the right one AND be unique across the whole deck. A push button emitted as a
+        // resistor took "R1" from an actual R1, and SPICE kept only one of them without
+        // complaining.
+        string Name(string spiceLetter)
+        {
+            var d = part.Designator;
+            var candidate = d.StartsWith(spiceLetter, StringComparison.OrdinalIgnoreCase)
+                ? d
+                : spiceLetter + d;
+
+            var unique = candidate;
+            for (int i = 2; !usedNames.Add(unique); i++) unique = candidate + "_" + i;
+            return unique;
+        }
+
+        // Magnitudes are normalised so SPICE cannot read "1M" as a milliohm.
+        var spiceValue = SpiceValue.ForSpice(value);
+
         switch (def.Symbol)
         {
-            case SymbolShape.Box when def.Prefix == "R":
+            case SymbolShape.Box when def.Pins.Count == 3:
+            {
+                // A potentiometer is two resistances meeting at the wiper. Emitting it as
+                // one two-terminal resistor throws the wiper away, and with it every
+                // divider, volume control and sensor bias anyone builds from it.
+                double total = SpiceValue.Parse(value) ?? 10e3;
+                double position = SpiceValue.Parse(part.Value) is not null ? 0.5 : 0.5;
+                double upper = Math.Max(total * position, 1e-3);
+                double lower = Math.Max(total - upper, 1e-3);
+                var stem = Name("R");
+                b.AppendLine($"{stem} {N("1")} {N("2")} {upper.ToString("G6", CultureInfo.InvariantCulture)}");
+                b.AppendLine($"{stem}_B {N("2")} {N("3")} {lower.ToString("G6", CultureInfo.InvariantCulture)}");
+                approx.Add($"{part.Designator} ตั้งตำแหน่งตัวปรับไว้กลางทาง (50%) — ยังปรับในโปรแกรมไม่ได้");
+                break;
+            }
+
             case SymbolShape.Box:
-                b.AppendLine($"R{Suffix(part, "R")} {N("1")} {N("2")} {value}");
+                b.AppendLine($"{Name("R")} {N("1")} {N("2")} {spiceValue}");
                 break;
 
             case SymbolShape.CapacitorNonPolar:
             case SymbolShape.CapacitorPolarised:
-                b.AppendLine($"C{Suffix(part, "C")} {N("1")} {N("2")} {value}");
+                b.AppendLine($"{Name("C")} {N("1")} {N("2")} {spiceValue}");
                 break;
 
             case SymbolShape.Inductor:
-                b.AppendLine($"L{Suffix(part, "L")} {N("1")} {N("2")} {value}");
+                b.AppendLine($"{Name("L")} {N("1")} {N("2")} {spiceValue}");
                 break;
 
             case SymbolShape.Diode:
             case SymbolShape.Led:
             case SymbolShape.Zener:
-                b.AppendLine($"D{Suffix(part, "D")} {N("1")} {N("2")} {def.SpiceModel}");
+                b.AppendLine($"{Name("D")} {N("1")} {N("2")} {def.SpiceModel}");
                 if (def.SpiceModel is { } dm) models.Add(DiodeModelCard(dm));
                 break;
 
             case SymbolShape.BjtNpn:
             case SymbolShape.BjtPnp:
                 // SPICE order is collector base emitter.
-                b.AppendLine($"Q{Suffix(part, "Q")} {N("2")} {N("1")} {N("3")} {def.SpiceModel}");
+                b.AppendLine($"{Name("Q")} {N("2")} {N("1")} {N("3")} {def.SpiceModel}");
                 if (def.SpiceModel is { } qm)
                     models.Add(BjtModelCard(qm, def.Symbol == SymbolShape.BjtNpn));
                 break;
@@ -149,28 +186,25 @@ public static class NetlistBuilder
             case SymbolShape.MosfetN:
             case SymbolShape.MosfetP:
                 // drain gate source bulk — bulk tied to source, as a discrete part is.
-                b.AppendLine($"M{Suffix(part, "M")} {N("2")} {N("1")} {N("3")} {N("3")} {def.SpiceModel}");
+                b.AppendLine($"{Name("M")} {N("2")} {N("1")} {N("3")} {N("3")} {def.SpiceModel}");
                 if (def.SpiceModel is { } mm)
                     models.Add(MosfetModelCard(mm, def.Symbol == SymbolShape.MosfetN));
                 break;
 
             case SymbolShape.VoltageSource:
-                var spec = value.StartsWith("PULSE", StringComparison.OrdinalIgnoreCase) ||
-                           value.StartsWith("SIN", StringComparison.OrdinalIgnoreCase)
-                    ? value
-                    : $"DC {value}";
-                b.AppendLine($"V{Suffix(part, "V")} {N("1")} {N("2")} {spec}");
+                var spec = SpiceValue.IsMagnitude(value) ? $"DC {spiceValue}" : value;
+                b.AppendLine($"{Name("V")} {N("1")} {N("2")} {spec}");
                 break;
 
             case SymbolShape.CurrentSource:
-                b.AppendLine($"I{Suffix(part, "I")} {N("1")} {N("2")} DC {value}");
+                b.AppendLine($"{Name("I")} {N("1")} {N("2")} DC {spiceValue}");
                 break;
 
             case SymbolShape.Switch:
                 // A push button is a resistor: 1 GΩ open, 10 mΩ closed. Modelling it as a
                 // real SPICE switch needs a control node the schematic does not have.
                 bool closed = string.Equals(part.Value, "CLOSED", StringComparison.OrdinalIgnoreCase);
-                b.AppendLine($"R{Suffix(part, "SW")} {N("1")} {N("2")} {(closed ? "10m" : "1G")}");
+                b.AppendLine($"{Name("R")} {N("1")} {N("2")} {(closed ? "0.01" : "1e9")}");
                 approx.Add($"{part.Designator} สวิตช์จำลองเป็นตัวต้านทาน {(closed ? "10 mΩ (ปิด)" : "1 GΩ (เปิด)")}");
                 break;
 

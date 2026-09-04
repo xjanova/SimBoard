@@ -2,6 +2,8 @@
   <Folder Name="/spikes/">
     <Project Path="spikes/S1.NgspiceSidecar/S1.NgspiceSidecar.csproj" />
     <Project Path="spikes/S5.LiveCircuit/S5.LiveCircuit.csproj" />
+    <Project Path="spikes/S6.Audit/S6.Audit.csproj" />
+    <Project Path="spikes/S7.Import/S7.Import.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/SimBoard.App/SimBoard.App.csproj" />

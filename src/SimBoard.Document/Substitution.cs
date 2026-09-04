@@ -23,7 +23,7 @@ public enum FindingCode
     BelowRating, HigherLoss, MarginThin, HeavilyOverRated,
     GainLower, GainHigher,
     SlowerSwitching,
-    DifferentPinout, DifferentPackage,
+    DifferentPinout, PinoutUnknown, DifferentPackage,
     UnverifiedData,
 }
 
@@ -206,7 +206,14 @@ public static class Substitution
         }
         else score += 2.0;
 
-        // The trap that bites technicians: identical electrical specs, legs in a different order.
+        // The trap that bites technicians: identical electrical specs, legs in a different
+        // order. Two parts can match on every rating and still destroy each other's circuit.
+        //
+        // An UNKNOWN lead order has to be said out loud, not skipped. Silence here reads as
+        // "nothing to worry about", and because a match scores +2.0, a lead order that was
+        // guessed and happens to agree is actively recommended as pin-compatible — which
+        // makes a wrong value strictly worse than an absent one. Absent now costs a point
+        // and produces a finding, so the gap is visible rather than flattering.
         if (original.Pinout is { Length: > 0 } op && candidate.Pinout is { Length: > 0 } cp)
         {
             if (!string.Equals(op, cp, StringComparison.OrdinalIgnoreCase))
@@ -215,6 +222,12 @@ public static class Substitution
                 score += Penalty(Severity.Serious);
             }
             else score += 2.0;
+        }
+        else if (original.Pinout is { Length: > 0 } or null || candidate.Pinout is null)
+        {
+            findings.Add(new Finding(Severity.Serious, FindingCode.PinoutUnknown,
+                candidate.Mpn ?? candidate.Key));
+            score -= 1.0;
         }
 
         if (candidate.Provenance == Provenance.Unverified)
