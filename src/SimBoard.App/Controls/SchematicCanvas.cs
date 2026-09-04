@@ -20,6 +20,7 @@ public class SchematicCanvas : Control
     private const double MinStep = 3, MaxStep = 40;
 
     private CircuitDocument _doc = new();
+    private EditHistory _history;
     private double _step = 10;                 // pixels per grid step
     private Point _offset = new(40, 40);       // pixels
 
@@ -30,6 +31,7 @@ public class SchematicCanvas : Control
     private GridPoint? _wireFrom;
     private GridPoint _cursor;
     private bool _pointerInside;
+    private GridPoint _dragStart;              // where the part was before the drag began
 
     /// <summary>
     /// Fit is deferred to the first frame that has a real size. Calling it from
@@ -48,6 +50,7 @@ public class SchematicCanvas : Control
     {
         Focusable = true;
         ClipToBounds = true;
+        _history = new EditHistory(_doc);
 
         // SizeChanged, not Render: invalidating from inside a render pass throws
         // "Visual was invalidated during the render pass". This fires after layout, when
@@ -63,7 +66,42 @@ public class SchematicCanvas : Control
     public CircuitDocument Document
     {
         get => _doc;
-        set { _doc = value; _selected = null; _needsFit = true; InvalidateVisual(); Raise(); }
+        set
+        {
+            _doc = value;
+            _selected = null;
+            _needsFit = true;
+            _history = new EditHistory(value);
+            InvalidateVisual();
+            Raise();
+        }
+    }
+
+    /// <summary>Undo/redo for this canvas. Every edit the user makes goes through it.</summary>
+    public EditHistory History => _history;
+
+    private IReadOnlyList<Net>? _resultNets;
+    private IReadOnlyDictionary<string, double>? _voltages;
+
+    /// <summary>
+    /// Shows the last simulation on the sheet itself. The numbers are drawn on the nets
+    /// they belong to, because a voltage in a side panel makes you match names by eye;
+    /// on the wire it is simply where you are already looking.
+    /// </summary>
+    public void ShowResults(IReadOnlyList<Net> nets, IReadOnlyDictionary<string, double> voltages)
+    {
+        _resultNets = nets;
+        _voltages = voltages;
+        InvalidateVisual();
+    }
+
+    /// <summary>Clears the overlay — any edit makes the last run stale.</summary>
+    public void ClearResults()
+    {
+        if (_resultNets is null) return;
+        _resultNets = null;
+        _voltages = null;
+        InvalidateVisual();
     }
 
     public EditorTool Tool { get; set; } = EditorTool.Select;
@@ -114,6 +152,7 @@ public class SchematicCanvas : Control
         if (_selected is not null) DrawSelectionHandles(ctx, _selected);
         if (_wireFrom is { } from) DrawWirePreview(ctx, from, stroke);
         if (Tool == EditorTool.Place && PendingPart is not null && _pointerInside) DrawGhost(ctx, stroke);
+        DrawVoltages(ctx);
         DrawCursorReadout(ctx);
     }
 
@@ -184,6 +223,30 @@ public class SchematicCanvas : Control
             SymbolRenderer.Draw(ctx, ghost, ToPixel, _step, true, stroke);
     }
 
+    /// <summary>Node-voltage tags, drawn on the net rather than beside it.</summary>
+    private void DrawVoltages(DrawingContext ctx)
+    {
+        if (_resultNets is null || _voltages is null || _step < 6) return;
+
+        foreach (var net in _resultNets)
+        {
+            if (net.IsGround || !_voltages.TryGetValue(net.SpiceName, out var volts)) continue;
+            if (net.Points.Count == 0) continue;
+
+            // Anchor on the topmost-leftmost point of the net, so the tag sits at a
+            // predictable end of the run instead of wherever the hash happened to order.
+            var at = net.Points.OrderBy(q => q.Y).ThenBy(q => q.X).First();
+            var text = SymbolRenderer.Text($"{volts:0.000} V", Math.Max(9, _step * 1.05), SymbolRenderer.Selected);
+            var p = ToPixel(at);
+            var box = new Rect(p.X + _step * 0.4, p.Y - text.Height - _step * 0.2,
+                               text.Width + 6, text.Height + 2);
+
+            ctx.DrawRectangle(new SolidColorBrush(Color.Parse("#0d1418")),
+                              new Pen(SymbolRenderer.Selected, 1), box);
+            ctx.DrawText(text, new Point(box.X + 3, box.Y + 1));
+        }
+    }
+
     private void DrawCursorReadout(DrawingContext ctx)
     {
         if (!_pointerInside) return;
@@ -209,6 +272,7 @@ public class SchematicCanvas : Control
         {
             case EditorTool.Place when PendingPart is not null:
                 var placed = _doc.Place(PendingPart, _cursor);
+                _history.Record(new PlacePart(placed));
                 Selected = placed;
                 Raise();
                 break;
@@ -218,8 +282,10 @@ public class SchematicCanvas : Control
                 {
                     // Two segments, so the run is orthogonal like a drawn schematic.
                     var corner = new GridPoint(_cursor.X, from.Y);
-                    if (corner != from) _doc.Connect(from, corner);
-                    if (corner != _cursor) _doc.Connect(corner, _cursor);
+                    var added = new List<Wire>();
+                    if (corner != from) added.Add(_doc.Connect(from, corner));
+                    if (corner != _cursor) added.Add(_doc.Connect(corner, _cursor));
+                    if (added.Count > 0) _history.Record(new AddWires(added));
                     // Chain from here, so a run of wires is one gesture per corner.
                     _wireFrom = _cursor;
                     Raise();
@@ -237,6 +303,7 @@ public class SchematicCanvas : Control
                 if (hit is not null && !hit.Locked)
                 {
                     _dragging = hit;
+                    _dragStart = hit.Position;
                     _dragGrab = new GridPoint(_cursor.X - hit.Position.X, _cursor.Y - hit.Position.Y);
                 }
                 break;
@@ -279,7 +346,15 @@ public class SchematicCanvas : Control
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        if (_dragging is not null) { _dragging = null; Raise(); }
+        if (_dragging is { } moved)
+        {
+            // One command for the whole drag, not one per frame - undo should take back
+            // the gesture the user made, not a single pixel of it.
+            if (moved.Position != _dragStart)
+                _history.Record(new MovePart(moved.Id, _dragStart, moved.Position));
+            _dragging = null;
+            Raise();
+        }
         _panFrom = null;
     }
 
@@ -305,13 +380,23 @@ public class SchematicCanvas : Control
         switch (e.Key)
         {
             case Key.Delete or Key.Back when _selected is not null:
-                _doc.Remove(_selected);
-                Selected = null;
-                Raise();
+                DeletePart(_selected);
                 break;
 
             case Key.R when _selected is not null:
-                _selected.Rotation = (Rotation)(((int)_selected.Rotation + 90) % 360);
+                var was = _selected.Rotation;
+                _history.Do(new RotatePart(_selected.Id, was, (Rotation)(((int)was + 90) % 360)));
+                Raise();
+                break;
+
+            case Key.Z when e.KeyModifiers.HasFlag(KeyModifiers.Control):
+                _history.Undo();
+                if (_selected is not null && !_doc.Parts.Contains(_selected)) Selected = null;
+                Raise();
+                break;
+
+            case Key.Y when e.KeyModifiers.HasFlag(KeyModifiers.Control):
+                _history.Redo();
                 Raise();
                 break;
 
@@ -337,9 +422,24 @@ public class SchematicCanvas : Control
 
     private void DeleteAt(GridPoint g)
     {
-        if (_doc.PartAt(g) is { } part) { _doc.Remove(part); if (ReferenceEquals(part, _selected)) Selected = null; Raise(); return; }
+        if (_doc.PartAt(g) is { } part) { DeletePart(part); return; }
         var wire = _doc.Wires.FirstOrDefault(w => w.Points().Contains(g));
-        if (wire is not null) { _doc.Remove(wire); Raise(); }
+        if (wire is not null) { _history.Do(new RemoveWire(wire)); Raise(); }
+    }
+
+    /// <summary>
+    /// Deleting a part takes the wires that ended on its pins with it. Leaving them
+    /// behind would silently keep two nets joined through a part that is no longer
+    /// there. They come back together on undo.
+    /// </summary>
+    private void DeletePart(PartInstance part)
+    {
+        var pins = part.PinPositions().Select(x => x.At).ToHashSet();
+        var touching = _doc.Wires.Where(w => pins.Contains(w.A) || pins.Contains(w.B)).ToList();
+
+        _history.Do(new RemovePart(part, touching));
+        if (ReferenceEquals(part, _selected)) Selected = null;
+        Raise();
     }
 
     /// <summary>Centres the view on everything that is placed.</summary>
@@ -358,5 +458,10 @@ public class SchematicCanvas : Control
         InvalidateVisual();
     }
 
-    private void Raise() => DocumentChanged?.Invoke(this, EventArgs.Empty);
+    private void Raise()
+    {
+        // The circuit changed, so the last run no longer describes it.
+        ClearResults();
+        DocumentChanged?.Invoke(this, EventArgs.Empty);
+    }
 }

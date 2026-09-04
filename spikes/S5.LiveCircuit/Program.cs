@@ -167,6 +167,76 @@ Section("5 · the catalog knows its parts");
     Report(ne555.PinByNumber("5")?.Name == "CTRL", "NE555 pin 5 is CTRL — the one that was miswired in S1");
 }
 
+Section("6 · undo and redo put the circuit back exactly");
+{
+    var doc = new CircuitDocument { Title = "history" };
+    var history = new EditHistory(doc);
+
+    var r1 = doc.Place(PartCatalog.Require("R"), new GridPoint(4, 4));
+    history.Record(new PlacePart(r1));
+    var c1 = doc.Place(PartCatalog.Require("C"), new GridPoint(12, 4));
+    history.Record(new PlacePart(c1));
+    history.Do(new SetValue(r1.Id, r1.Value, "4k7"));
+
+    Report(doc.Parts.Count == 2 && r1.Value == "4k7", "placed two parts and changed a value");
+
+    history.Undo();
+    Report(r1.Value == "10k", $"undo restored the value ({r1.Value})");
+    history.Undo();
+    Report(doc.Parts.Count == 1, $"undo removed the second part ({doc.Parts.Count} left)");
+    history.Redo();
+    Report(doc.Parts.Count == 2, "redo put it back");
+    history.Redo();
+    Report(r1.Value == "4k7", "redo reapplied the value");
+
+    // A drag arrives as many small moves; undo must take back the gesture, not a frame.
+    var start = r1.Position;
+    for (int i = 1; i <= 8; i++)
+    {
+        var from = r1.Position;
+        r1.Position = new GridPoint(start.X + i, start.Y);
+        history.Record(new MovePart(r1.Id, from, r1.Position));
+    }
+    history.Undo();
+    Report(r1.Position == start, $"one undo took back the whole drag (back at {r1.Position})");
+}
+
+Section("7 · a project survives a round trip through disk");
+{
+    var doc = new CircuitDocument { Title = "roundtrip" };
+    var v1 = doc.Place(PartCatalog.Require("VDC"), new GridPoint(0, 4));
+    var r1 = doc.Place(PartCatalog.Require("R"), new GridPoint(6, 2), Rotation.R90);
+    var esp = doc.Place(PartCatalog.Require("ESP32-DEVKIT"), new GridPoint(20, 0));
+    var gnd = doc.Place(PartCatalog.Require("GND"), new GridPoint(6, 12));
+    v1.Value = "3.3";
+    r1.Value = "4k7";
+    doc.Connect(new GridPoint(1, 1), new GridPoint(9, 1));
+
+    var path = Path.Combine(Path.GetTempPath(), "simboard-roundtrip.sbp");
+    ProjectFile.Save(doc, path);
+    var (loaded, warnings) = ProjectFile.Load(path);
+
+    Report(warnings.Count == 0, $"loaded with no warnings ({warnings.Count})");
+    Report(loaded.Parts.Count == doc.Parts.Count, $"{loaded.Parts.Count} parts survived");
+    Report(loaded.Wires.Count == doc.Wires.Count, $"{loaded.Wires.Count} wires survived");
+
+    var lr = loaded.Parts.First(x => x.Designator == r1.Designator);
+    Report(lr.Value == "4k7" && lr.Rotation == Rotation.R90, "value and rotation survived");
+    Report(loaded.Parts.Any(x => x.Definition.Pins.Count == 30), "the ESP32 came back with all 30 pins");
+
+    // The round trip has to preserve the circuit, not just the objects — compare before
+    // touching the loaded document, since placing anything adds nets of its own.
+    Report(loaded.ExtractNets().Count == doc.ExtractNets().Count,
+        $"the same nets come back ({loaded.ExtractNets().Count} vs {doc.ExtractNets().Count})");
+
+    // The id counter must move past what was loaded, or a new part collides with an
+    // existing one and undo starts acting on the wrong thing.
+    var fresh = loaded.Place(PartCatalog.Require("R"), new GridPoint(40, 40));
+    Report(loaded.Parts.Count(x => x.Id == fresh.Id) == 1, $"a part placed after loading got a free id ({fresh.Id})");
+
+    File.Delete(path);
+}
+
 Console.WriteLine();
 Console.WriteLine(failures == 0
     ? "S5 PASSED — placing and wiring parts drives the simulator for real."

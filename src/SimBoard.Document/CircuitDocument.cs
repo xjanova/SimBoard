@@ -136,6 +136,25 @@ public sealed class CircuitDocument
 
     private string NextId(string prefix) => $"{prefix}{++_nextId}";
 
+    /// <summary>
+    /// Moves the id counter past everything already in the document. A loaded project
+    /// arrives with ids the counter has never issued, and without this the first part
+    /// placed afterwards would take an id that already belongs to something — which
+    /// silently breaks undo, since commands find parts by id.
+    /// </summary>
+    public void ReseedIds()
+    {
+        int highest = 0;
+        foreach (var id in Parts.Select(p => p.Id)
+                     .Concat(Wires.Select(w => w.Id))
+                     .Concat(Labels.Select(l => l.Id)))
+        {
+            var digits = id.AsSpan(1);
+            if (int.TryParse(digits, out var n) && n > highest) highest = n;
+        }
+        _nextId = highest;
+    }
+
     /// <summary>Places a part, assigning the next free designator for its prefix.</summary>
     public PartInstance Place(PartDefinition def, GridPoint at, Rotation rotation = Rotation.R0)
     {

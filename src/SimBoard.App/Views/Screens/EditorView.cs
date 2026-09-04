@@ -4,6 +4,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using SimBoard.App.Controls;
 using SimBoard.Document;
+using Avalonia.Platform.Storage;
 using SimBoard.Spice;
 
 namespace SimBoard.App.Views.Screens;
@@ -29,7 +30,7 @@ public static class EditorView
 
         void Refresh()
         {
-            ShowProperties(props, canvas.Selected);
+            ShowProperties(props, canvas, Refresh);
             ShowRules(report, doc);
             var nets = doc.ExtractNets();
             status.Text = $"อุปกรณ์ {doc.Parts.Count} · สาย {doc.Wires.Count} · เนต {nets.Count}";
@@ -44,7 +45,7 @@ public static class EditorView
         Grid.SetColumn(left, 0);
 
         var centre = new DockPanel { LastChildFill = true, Margin = new Thickness(6, 0) };
-        var bar = Toolbar(canvas, doc, report, status);
+        var bar = Toolbar(canvas, report, status);
         DockPanel.SetDock(bar, Dock.Top);
         centre.Children.Add(bar);
         var statusRow = new Bevel { Classes = { "flat" }, Padding = new Thickness(6, 2), Child = status };
@@ -186,8 +187,7 @@ public static class EditorView
         };
     }
 
-    private static Control Toolbar(
-        SchematicCanvas canvas, CircuitDocument doc, StackPanel report, TextBlock status)
+    private static Control Toolbar(SchematicCanvas canvas, StackPanel report, TextBlock status)
     {
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
         var buttons = new List<(Button B, EditorTool T)>();
@@ -218,18 +218,36 @@ public static class EditorView
         }
         buttons[0].B.Classes.Add("latched");
 
+        var undo = new Button { Classes = { "tool" }, Content = "↶", Margin = new Thickness(8, 0, 0, 0) };
+        ToolTip.SetTip(undo, "ย้อนกลับ (Ctrl+Z)");
+        undo.Click += (_, _) => { canvas.History.Undo(); canvas.Focus(); canvas.InvalidateVisual(); };
+
+        var redo = new Button { Classes = { "tool" }, Content = "↷" };
+        ToolTip.SetTip(redo, "ทำซ้ำ (Ctrl+Y)");
+        redo.Click += (_, _) => { canvas.History.Redo(); canvas.Focus(); canvas.InvalidateVisual(); };
+
+        var open = new Button { Content = "เปิด", Margin = new Thickness(8, 0, 0, 0) };
+        open.Click += async (_, _) => await OpenProject(canvas, report, status);
+
+        var save = new Button { Content = "บันทึก" };
+        save.Click += async (_, _) => await SaveProject(canvas, status);
+
         var play = new Button { Classes = { "default" }, Content = "▶ รันซิม", Margin = new Thickness(8, 0, 0, 0) };
         play.Click += async (_, _) =>
         {
             play.IsEnabled = false;
             status.Text = "กำลังจำลอง…";
-            try { await Simulate(doc, report, status); }
+            try { await Simulate(canvas, report, status); }
             finally { play.IsEnabled = true; }
         };
 
         var fit = new Button { Content = "พอดีจอ", Margin = new Thickness(4, 0, 0, 0) };
         fit.Click += (_, _) => canvas.ZoomToFit();
 
+        tools.Children.Add(undo);
+        tools.Children.Add(redo);
+        tools.Children.Add(open);
+        tools.Children.Add(save);
         tools.Children.Add(play);
         tools.Children.Add(fit);
 
@@ -268,8 +286,65 @@ public static class EditorView
 
     // ── content ──────────────────────────────────────────────────────────
 
-    private static void ShowProperties(StackPanel host, PartInstance? part)
+    private static async Task SaveProject(SchematicCanvas canvas, TextBlock status)
     {
+        var top = TopLevel.GetTopLevel(canvas);
+        if (top is null) return;
+
+        var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "บันทึกโปรเจกต์",
+            SuggestedFileName = canvas.Document.Title + ProjectFile.Extension,
+            DefaultExtension = ProjectFile.Extension.TrimStart('.'),
+            FileTypeChoices = [new FilePickerFileType("SimBoard project") { Patterns = ["*" + ProjectFile.Extension] }],
+        });
+        if (file is null) return;
+
+        try
+        {
+            ProjectFile.Save(canvas.Document, file.Path.LocalPath);
+            status.Text = $"บันทึกแล้ว · {file.Name}";
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            status.Text = "บันทึกไม่สำเร็จ — " + e.Message;
+        }
+    }
+
+    private static async Task OpenProject(SchematicCanvas canvas, StackPanel report, TextBlock status)
+    {
+        var top = TopLevel.GetTopLevel(canvas);
+        if (top is null) return;
+
+        var files = await top.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "เปิดโปรเจกต์",
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType("SimBoard project") { Patterns = ["*" + ProjectFile.Extension] }],
+        });
+        if (files.Count == 0) return;
+
+        try
+        {
+            var (doc, warnings) = ProjectFile.Load(files[0].Path.LocalPath);
+            canvas.Document = doc;
+            status.Text = $"เปิดแล้ว · {files[0].Name} · อุปกรณ์ {doc.Parts.Count}";
+
+            report.Children.Clear();
+            foreach (var w in warnings)
+                report.Children.Add(Warn(w, "#8a6420"));
+        }
+        catch (Exception e) when (e is IOException or InvalidDataException or System.Text.Json.JsonException)
+        {
+            status.Text = "เปิดไม่สำเร็จ";
+            report.Children.Clear();
+            report.Children.Add(Warn(e.Message, "#8a2b22"));
+        }
+    }
+
+    private static void ShowProperties(StackPanel host, SchematicCanvas canvas, Action refresh)
+    {
+        var part = canvas.Selected;
         host.Children.Clear();
         if (part is null)
         {
@@ -282,7 +357,31 @@ public static class EditorView
         host.Children.Add(Row("ชนิด", d.Key));
         if (d.Mpn is { } mpn) host.Children.Add(Row("เบอร์", mpn));
         if (d.Package is { } pkg) host.Children.Add(Row("แพ็กเกจ", pkg));
-        if (part.Value is { } v) host.Children.Add(Row("ค่า", v + (d.Unit ?? "")));
+        if (part.Value is not null)
+        {
+            // Editable, and routed through the undo stack like every other edit —
+            // retyping a resistor value is the most common change there is.
+            var field = new TextBox { Text = part.Value, FontSize = 10 };
+            field.LostFocus += (_, _) => Commit();
+            field.KeyDown += (_, ke) => { if (ke.Key == Avalonia.Input.Key.Enter) Commit(); };
+
+            void Commit()
+            {
+                var typed = field.Text ?? "";
+                if (typed == part.Value) return;
+                canvas.History.Do(new SetValue(part.Id, part.Value, typed));
+                canvas.InvalidateVisual();
+                refresh();
+            }
+
+            var g = new Grid { ColumnDefinitions = new ColumnDefinitions("76,*") };
+            var lbl = new TextBlock { Text = "ค่า", FontSize = 10, Foreground = new SolidColorBrush(Color.Parse("#5a5a5a")) };
+            Grid.SetColumn(lbl, 0);
+            Grid.SetColumn(field, 1);
+            g.Children.Add(lbl);
+            g.Children.Add(field);
+            host.Children.Add(g);
+        }
         host.Children.Add(Row("หมุน", $"{(int)part.Rotation}°"));
         host.Children.Add(Row("ตำแหน่ง", $"{part.Position.X * 2.54:0.0}, {part.Position.Y * 2.54:0.0} mm"));
 
@@ -344,8 +443,9 @@ public static class EditorView
             });
     }
 
-    private static async Task Simulate(CircuitDocument doc, StackPanel report, TextBlock status)
+    private static async Task Simulate(SchematicCanvas canvas, StackPanel report, TextBlock status)
     {
+        var doc = canvas.Document;
         var built = NetlistBuilder.Build(doc, Analysis.Transient(1e-6, 2e-3));
         report.Children.Clear();
 
@@ -367,10 +467,12 @@ public static class EditorView
                 FontWeight = FontWeight.Bold,
             });
 
+            var volts = new Dictionary<string, double>();
             foreach (var net in built.Nets.Where(n => !n.IsGround))
             {
                 var v = result[net.SpiceName];
                 if (v is null || v.Count == 0) continue;
+                volts[net.SpiceName] = v.Values[^1];
                 report.Children.Add(new TextBlock
                 {
                     Classes = { "mono" },
@@ -378,6 +480,9 @@ public static class EditorView
                            string.Join(", ", net.Connections.Take(3).Select(c => $"{c.Part.Designator}.{c.Pin.Name}")),
                 });
             }
+
+            // Put the answer on the sheet, not only in the panel.
+            canvas.ShowResults(built.Nets, volts);
 
             foreach (var a in built.Approximations)
                 report.Children.Add(Warn(a, "#8a6420"));
