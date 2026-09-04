@@ -16,7 +16,10 @@ public static class ScreenHost
     /// <summary>Screens that live inside the centre workspace.</summary>
     public static Control? Workspace(string name) => name.ToLowerInvariant() switch
     {
-        "schematic" => SchematicView.Build(),
+        // The real editor, not the picture of one. SchematicView stays reachable as
+        // "mockup" so the hi-fi reference can still be compared against.
+        "schematic" or "editor" => EditorView.Build(),
+        "mockup" => SchematicView.Build(),
         "breadboard" => BreadboardView.Build(),
         "pcb" => PcbView.Build(),
         "library" => LibraryView.Build(),
@@ -70,7 +73,7 @@ public static class ScreenHost
     /// <summary>Every name <c>--open</c> accepts, for the screenshot-verification loop.</summary>
     public static readonly string[] Names =
     [
-        "start", "schematic", "library", "breadboard", "sim",
+        "start", "schematic", "editor", "mockup", "library", "breadboard", "sim",
         "instruments", "import", "pcb", "layers", "settings",
     ];
 }
