@@ -22,8 +22,7 @@
         <Grid ColumnDefinitions="14,*,Auto">
           <Border Grid.Column="0" Width="12" Height="12" CornerRadius="2"
                   Background="#e8b04a" BorderBrush="#8a6420" BorderThickness="1" />
-          <TextBlock Grid.Column="1" Margin="6,0,0,0"
-                     Text="555-astable-reg.sbp — SimBoard" />
+          <TextBlock Grid.Column="1" Margin="6,0,0,0" Name="TitleText" />
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
             <Button Name="MinBtn" Width="16" Height="14" Padding="0" MinHeight="0">
               <Button.Template>

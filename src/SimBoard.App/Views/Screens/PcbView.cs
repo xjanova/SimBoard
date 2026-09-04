@@ -13,6 +13,74 @@ namespace SimBoard.App.Views.Screens;
 /// "8 · PCB + AI auto-place &amp; route — `08-pcb-ai-autoplace.png`".</summary>
 public static class PcbView
 {
+    /// <summary>
+    /// The board for the circuit on the sheet: real footprints from the real parts, and a
+    /// ratsnest from the real nets.
+    ///
+    /// It stops at placement, and says so. Routing is not done here and nothing on this
+    /// screen implies it was — which is the whole reason the mock could not simply be
+    /// wired up. <see cref="BuildMock"/> still shows the design, and it still prints
+    /// "RATSNEST LEN 1,842 -&gt; 1,106 mm", "68%" and a DRC table of PASS rows: an
+    /// optimisation result, a completion figure and a clean rule check, none of which any
+    /// code in this program computes. Beside a live board those stop being placeholder art
+    /// and start being claims about the user's own design.
+    /// </summary>
+    public static Control Build()
+    {
+        var board = new PcbCanvas();
+        var side = new StackPanel { Spacing = 2, Margin = new Thickness(12, 10) };
+
+        void Fill()
+        {
+            side.Children.Clear();
+            side.Children.Add(Info("การวางอุปกรณ์ · ยังไม่ได้เดินลาย", "#e8b04a", 11, bold: true));
+            side.Children.Add(Info(
+                "หน้านี้วางตำแหน่งอุปกรณ์และลากเส้นบอกว่าขาไหนต้องต่อถึงกัน (ratsnest) เท่านั้น " +
+                "ยังไม่มีลายทองแดงเส้นไหนถูกเดิน และยังไม่มีการตรวจ DRC",
+                "#6f8ba1", 9));
+
+            var placements = board.Placements;
+            var generic = board.GenericFootprintCount;
+
+            side.Children.Add(Gap());
+            side.Children.Add(Info($"อุปกรณ์บนแผ่น      {placements.Count}", "#8fa8bd", 10));
+            side.Children.Add(Info($"ตัวถังที่ไม่รู้จัก   {generic}", generic > 0 ? "#e8b04a" : "#8fa8bd", 10));
+            side.Children.Add(Info($"เส้น ratsnest      {board.Ratsnest.Count}", "#8fa8bd", 10));
+
+            // Deliberately absent: trace count, via count, completion percent, DRC result.
+            // Nothing routes, so every one of those would be a number about work that did
+            // not happen. The mock shows all four.
+            side.Children.Add(Gap());
+            foreach (var note in board.Notes)
+                side.Children.Add(Info("· " + note, "#6f8ba1", 9));
+        }
+
+        _ = Workspace.Subscribe(side, (_, _) => Fill());
+        board.PlacementChanged += (_, _) => Fill();
+
+        var panel = new Bevel { Classes = { "flat" }, Width = 314, Child = new ScrollViewer { Content = side } };
+        Grid.SetColumn(panel, 1);
+        var live = board;
+        Grid.SetColumn(live, 0);
+
+        var root = new Grid { ColumnDefinitions = new ColumnDefinitions("*,314") };
+        root.Children.Add(live);
+        root.Children.Add(panel);
+        return root;
+    }
+
+    private static TextBlock Info(string text, string colour, double size, bool bold = false) => new()
+    {
+        Text = text,
+        FontFamily = new FontFamily("Tahoma, Leelawadee UI, Noto Sans Thai, Segoe UI"),
+        FontSize = size,
+        FontWeight = bold ? FontWeight.Bold : FontWeight.Normal,
+        Foreground = new SolidColorBrush(Color.Parse(colour)),
+        TextWrapping = TextWrapping.Wrap,
+    };
+
+    private static Control Gap() => new Border { Height = 10 };
+
     // ── the board artwork, in the mock's own 840 × 700 user space ─────────
     private const double ArtWidth = 840;
     private const double ArtHeight = 700;
@@ -97,8 +165,8 @@ public static class PcbView
         ("เนตที่ยังไม่เดิน", "6"),
     ];
 
-    /// <summary>Builds the screen. Caller places the returned control.</summary>
-    public static Control Build()
+    /// <summary>The hi-fi reproduction of the design mock. A picture, and marked as one.</summary>
+    public static Control BuildMock()
     {
         var root = new Grid { ColumnDefinitions = new ColumnDefinitions("*,314") };
 

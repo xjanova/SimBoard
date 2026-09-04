@@ -21,8 +21,11 @@ public static class EditorView
 {
     public static Control Build()
     {
-        var doc = SampleCircuit();
-        var canvas = new SchematicCanvas { Document = doc };
+        // The circuit belongs to the workspace, not to this control. Every mode tab
+        // rebuilds its screen from scratch on a click, so a document owned here was
+        // thrown away and replaced with the demo every time the user looked at the
+        // breadboard and came back — silent data loss on an ordinary tab switch.
+        var canvas = new SchematicCanvas { Document = Workspace.Document };
         var scope = new ScopeView();
         SimulationResult? lastRun = null;
 
@@ -39,12 +42,20 @@ public static class EditorView
         void Refresh()
         {
             ShowProperties(props, canvas, Refresh);
-            ShowRules(report, doc);
-            var nets = doc.ExtractNets();
-            status.Text = $"อุปกรณ์ {doc.Parts.Count} · สาย {doc.Wires.Count} · เนต {nets.Count}";
+            // Read through the canvas rather than a captured local: opening a project
+            // swaps the document underneath, and a closure holding the old one would go
+            // on reporting the file the user just closed.
+            var live = canvas.Document;
+            ShowRules(report, live);
+            var nets = live.ExtractNets();
+            status.Text = $"อุปกรณ์ {live.Parts.Count} · สาย {live.Wires.Count} · เนต {nets.Count}";
         }
 
-        canvas.DocumentChanged += (_, _) => Refresh();
+        // An edit here is an edit everywhere: announcing it is what lets the breadboard,
+        // PCB and netlist tabs project this circuit instead of each holding a copy.
+        // Refresh comes back through the workspace subscription below, so it is not
+        // called twice for one edit.
+        canvas.DocumentChanged += (_, _) => Workspace.NotifyChanged();
         canvas.SelectionChanged += (_, _) => Refresh();
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("208,*,272") };
@@ -77,52 +88,20 @@ public static class EditorView
         grid.Children.Add(centre);
         grid.Children.Add(right);
 
-        canvas.AttachedToVisualTree += (_, _) => Refresh();   // the canvas fits itself on its first sized frame
-        return grid;
-    }
-
-    /// <summary>A small circuit that already works, so the screen opens with something to run.</summary>
-    private static CircuitDocument SampleCircuit()
-    {
-        var doc = new CircuitDocument { Title = "led-driver" };
-        var v1 = doc.Place(PartCatalog.Require("VPULSE"), new GridPoint(2, 6));
-        var r1 = doc.Place(PartCatalog.Require("R"), new GridPoint(10, 3));
-        var led = doc.Place(PartCatalog.Require("LED"), new GridPoint(20, 3));
-        var gnd = doc.Place(PartCatalog.Require("GND"), new GridPoint(10, 16));
-        // A pulse rather than a flat supply: the scope has to have something to draw,
-        // and a blinking LED is the circuit everyone builds first anyway.
-        v1.Value = "PULSE(0 5 0 10u 10u 400u 1m)";
-        r1.Value = "330";
-
-        Wire(doc, v1, "1", r1, "1");
-        Wire(doc, r1, "2", led, "1");
-        Wire(doc, led, "2", gnd, "1");
-        Wire(doc, v1, "2", gnd, "1");
-        return doc;
-    }
-
-    private static void Wire(CircuitDocument doc, PartInstance a, string aPin, PartInstance b, string bPin)
-    {
-        var pinA = a.Definition.PinByNumber(aPin)!;
-        var pinB = b.Definition.PinByNumber(bPin)!;
-        var (pa, pb) = (a.PinAt(pinA), b.PinAt(pinB));
-        var ea = Escape(pa, pinA.Side);
-        var eb = Escape(pb, pinB.Side);
-        var corner = pinA.Side is PinSide.Left or PinSide.Right
-            ? new GridPoint(ea.X, eb.Y) : new GridPoint(eb.X, ea.Y);
-
-        doc.Connect(pa, ea);
-        doc.Connect(ea, corner);
-        doc.Connect(corner, eb);
-        doc.Connect(eb, pb);
-
-        static GridPoint Escape(GridPoint p, PinSide s) => s switch
+        // Subscribe fires once on attach, which is what refreshes the panels on the first
+        // sized frame, and unhooks itself when this screen is torn down by the next tab
+        // click — a static event plus a rebuilt screen is otherwise a permanent leak.
+        _ = Workspace.Subscribe(grid, (_, e) =>
         {
-            PinSide.Left => p.Offset(-2, 0),
-            PinSide.Right => p.Offset(2, 0),
-            PinSide.Top => p.Offset(0, -2),
-            _ => p.Offset(0, 2),
-        };
+            // Only a replacement rebinds. The Document setter allocates a fresh undo
+            // history and re-fits the view, so running it on an ordinary edit would wipe
+            // undo as the user types.
+            if (e.Replaced && !ReferenceEquals(canvas.Document, Workspace.Document))
+                canvas.Document = Workspace.Document;
+            Refresh();
+        });
+
+        return grid;
     }
 
     // ── panels ───────────────────────────────────────────────────────────
@@ -348,7 +327,9 @@ public static class EditorView
         try
         {
             var (doc, warnings) = ProjectFile.Load(files[0].Path.LocalPath);
-            canvas.Document = doc;
+            // Through the workspace, so the breadboard and PCB tabs show the file that
+            // was just opened rather than the circuit it replaced.
+            Workspace.Replace(doc);
             status.Text = $"เปิดแล้ว · {files[0].Name} · อุปกรณ์ {doc.Parts.Count}";
 
             report.Children.Clear();

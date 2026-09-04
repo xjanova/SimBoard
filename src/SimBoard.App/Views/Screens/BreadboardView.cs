@@ -28,6 +28,88 @@ namespace SimBoard.App.Views.Screens;
 /// </summary>
 public static class BreadboardView
 {
+    /// <summary>
+    /// The breadboard as it really is for the circuit on the sheet.
+    ///
+    /// The hand-drawn scene below is still reachable as <see cref="BuildMock"/>, the same
+    /// way the schematic editor keeps <c>SchematicView</c> beside it — the mock is the UI
+    /// spec and comparing against it is worth keeping cheap. What it must not do is stand
+    /// in for the user's own circuit, which is what it did while nothing here read the
+    /// document: its legend printed five fixed rows of volts and milliamps that no code
+    /// ever computed, next to a board that could not have produced them.
+    /// </summary>
+    public static Control Build()
+    {
+        var board = new BreadboardCanvas();
+        var table = new StackPanel { Spacing = 1, Margin = new Thickness(10, 8) };
+
+        void Fill()
+        {
+            table.Children.Clear();
+            var layout = board.BoardLayout;
+            if (layout is null) return;
+
+            table.Children.Add(Row("NET        HOLES  PINS   ตัวที่ต่ออยู่", Meta, bold: true));
+
+            foreach (var net in layout.Nets)
+            {
+                // Tie-point groups, not holes: two pins in the same bank of one column are
+                // one electrical point, and counting holes would overstate every net.
+                var groups = layout.Parts
+                    .SelectMany(pl => pl.Pins)
+                    .Where(x => net.Connections.Any(c => c.Pin.Number == x.Pin.Number))
+                    .Select(x => x.At.Node)
+                    .Distinct()
+                    .Count();
+
+                var parts = string.Join(" ", net.Connections
+                    .Select(c => c.Part.Designator)
+                    .Distinct()
+                    .Take(6));
+
+                table.Children.Add(Row(
+                    $"{net.SpiceName,-10} {groups,5}  {net.PinCount,4}   {parts}",
+                    net.IsGround ? Current : LabelC));
+            }
+
+            // Volts and milliamps are deliberately absent. Nothing on this screen runs a
+            // simulation, so there is no measurement to show — and a column of dashes
+            // would only invite someone to wonder what filled it in the picture.
+            table.Children.Add(new TextBlock
+            {
+                Text = "ค่าแรงดันและกระแสไม่ได้แสดงที่นี่ หน้านี้ไม่ได้รันซิม — ดูได้ที่แท็บผังวงจรหรือ SPICE",
+                FontSize = 9,
+                Foreground = B(PanelText),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 8, 0, 0),
+            });   // TODO: localise
+        }
+
+        _ = Workspace.Subscribe(table, (_, _) => { board.Refresh(); Fill(); });
+
+        var side = new Bevel
+        {
+            Classes = { "flat" },
+            Width = 300,
+            Child = new ScrollViewer { Content = table },
+        };
+        DockPanel.SetDock(side, Dock.Right);
+
+        var host = new DockPanel { LastChildFill = true, Background = B(Bg) };
+        host.Children.Add(side);
+        host.Children.Add(board);
+        return host;
+    }
+
+    private static TextBlock Row(string text, string colour, bool bold = false) => new()
+    {
+        Text = text,
+        FontFamily = new FontFamily("Lucida Console, Consolas, monospace"),
+        FontSize = 9,
+        FontWeight = bold ? FontWeight.Bold : FontWeight.Normal,
+        Foreground = B(colour),
+    };
+
     private const double W = 1120;
     private const double H = 700;
 
@@ -84,7 +166,8 @@ public static class BreadboardView
     private enum TextAnchor { Start, Middle, End }
 
     /// <summary>Builds the screen. Caller places the returned control.</summary>
-    public static Control Build()
+    /// <summary>The hi-fi reproduction of the design mock. A picture, and marked as one.</summary>
+    public static Control BuildMock()
     {
         var scene = new Canvas { Width = W, Height = H, Background = B(Bg) };
 

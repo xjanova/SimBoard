@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using SimBoard.App.Controls;
 using SimBoard.App.Localization;
+using ElectricalRuleCheck = SimBoard.Document.ElectricalRuleCheck;
 
 namespace SimBoard.App.Views;
 
@@ -176,26 +177,68 @@ public partial class MainWindow : Window
         RefreshModeTabs();
     }
 
+    /// <summary>
+    /// The status bar, reading the real document.
+    ///
+    /// It used to be seven fixed strings copied from the mock, and while every screen was
+    /// a picture that was honest enough. It stopped being honest the moment the breadboard,
+    /// PCB and netlist tabs started showing computed numbers: the bar sat under a netlist
+    /// that said "4 parts · 3 nets" and announced "เนต 14 · อุปกรณ์ 22" in the same window.
+    ///
+    /// Two cells from the mock are gone rather than faked. The cursor readout needs a live
+    /// pointer position from whichever canvas has focus, and the selection cell needs that
+    /// canvas's selection — neither is plumbed through the shell yet, and a plausible
+    /// coordinate is worse than no coordinate. DRC is gone for a stronger reason: nothing
+    /// in this program runs a design-rule check, so "DRC 0" was a pass the user never got.
+    /// </summary>
     private void BuildStatusBar()
     {
         var host = this.FindControl<StackPanel>("StatusHost")!;
-        string[] cells =
-        [
-            "พร้อม", "X 184.15  Y 92.70 mm", "กริด 2.54 mm",
-            "เนต 14 · อุปกรณ์ 22", "DRC 0 / ERC 0", "เลือกอยู่: R2", "SPICE3f5 · TRAN",
-        ];
-        foreach (var text in cells)
-            host.Children.Add(new Bevel
-            {
-                Classes = { "statuscell" },
-                Child = new TextBlock
-                {
-                    Text = text,
-                    FontSize = 10,
-                    VerticalAlignment = VerticalAlignment.Center,
-                },
-            });
+
+        var parts = Cell();
+        var rules = Cell();
+        var grid = Cell();
+
+        host.Children.Add(Wrap(Cell("พร้อม")));
+        host.Children.Add(Wrap(grid));
+        host.Children.Add(Wrap(parts));
+        host.Children.Add(Wrap(rules));
+        host.Children.Add(Wrap(Cell("ngspice · SPICE3f5")));
+
+        void Refresh()
+        {
+            var doc = Workspace.Document;
+            var nets = doc.ExtractNets();
+            int errors = ElectricalRuleCheck.Run(doc).Count;
+
+            grid.Text = $"กริด {State.Grid:0.##} mm";
+            parts.Text = $"เนต {nets.Count} · อุปกรณ์ {doc.Parts.Count}";
+            rules.Text = errors == 0 ? "ERC ผ่าน" : $"ERC {errors}";
+        }
+
+        _ = Workspace.Subscribe(host, (_, _) => Refresh());
+        State.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(AppState.Grid)) Refresh();
+        };
+        Refresh();
+
+        if (this.FindControl<TextBlock>("TitleText") is { } title)
+        {
+            void Retitle() => title.Text = $"{Workspace.Document.Title} — SimBoard";
+            Retitle();
+            _ = Workspace.Subscribe(title, (_, _) => Retitle());
+        }
     }
+
+    private static TextBlock Cell(string text = "") => new()
+    {
+        Text = text,
+        FontSize = 10,
+        VerticalAlignment = VerticalAlignment.Center,
+    };
+
+    private static Bevel Wrap(TextBlock cell) => new() { Classes = { "statuscell" }, Child = cell };
 
     private void WireWindowButtons()
     {

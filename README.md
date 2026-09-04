@@ -94,7 +94,7 @@ offending node — never raw engine text.
 |---|---|
 | `src/SimBoard.App` | Avalonia UI — shell, themes, controls, all screens |
 | `src/SimBoard.Spice` | ngspice sidecar host, rawfile reader, instrument measurements |
-| `src/SimBoard.Parts` | parametric part library and substitution engine |
+| `src/SimBoard.Document` | circuit model, net extraction, catalogue, netlist, ERC, import |
 | `tools/SimBoard.Xref` | cross-reference CLI |
 | `spikes/` | Phase 0 risk spikes |
 | `_mockups/` | the original design handoff — source of truth for the UI spec |
@@ -111,3 +111,20 @@ C# 13 · .NET 10 · Avalonia 11 · SkiaSharp · ngspice 47
 Avalonia over WPF even though this is Windows-first: the schematic and PCB canvas is the
 hot path, and Avalonia hands a custom draw operation the SKCanvas directly where WPF goes
 through a per-frame bitmap blit.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Use it, fork it, ship it.
+
+The simulation engine is deliberately **not** covered by that, because it is not part of
+this repository. ngspice is fetched at setup time and runs as a separate process; nothing
+here links against it, so its licence terms never reach into this code and this licence
+never claims anything about it. That process boundary was chosen for crash isolation and a
+working Stop button first — the clean licence line is what it also buys.
+
+Xyce is a plausible future second engine and is GPLv3. If it is ever added it must stay
+behind the same sidecar boundary, for the same reason.
+
+Part figures in the catalogue are `Provenance.Unverified` — typed from general knowledge,
+not transcribed from datasheets, and not yet checked against them. The UI says so before
+it shows you a number. Do not treat them as authoritative for a build that matters.

@@ -119,7 +119,8 @@ public static class BreadboardLayout
 
             if (column > Columns - 2)
             {
-                notes.Add($"วงจรกว้างเกินบอร์ด 830 จุด — {part.Designator} เป็นตัวที่เริ่มล้น ต้องใช้บอร์ดที่สองหรือจัดใหม่");
+                notes.Add($"วงจรกว้างเกิน {Columns} คอลัมน์ที่วางได้ — {part.Designator} เป็นตัวที่เริ่มล้น "
+                             + "ต้องใช้บอร์ดที่สองหรือจัดใหม่");
                 break;
             }
         }
