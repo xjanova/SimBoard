@@ -1,4 +1,4 @@
-namespace SimBoard.Parts;
+namespace SimBoard.Document;
 
 public enum Severity
 {
@@ -29,7 +29,7 @@ public enum FindingCode
 
 public sealed record Finding(Severity Severity, FindingCode Code, params string[] Args);
 
-public sealed record Substitute(Part Part, double Score, IReadOnlyList<Finding> Findings)
+public sealed record Substitute(PartDefinition Part, double Score, IReadOnlyList<Finding> Findings)
 {
     /// <summary>False when at least one blocking finding applies — never present these as options.</summary>
     public bool Usable => !Findings.Any(f => f.Severity == Severity.Blocking);
@@ -40,8 +40,12 @@ public sealed record Rule(ParamKey Key, Compare Cmp, Severity WhenViolated);
 
 /// <summary>
 /// Ranks candidate substitutes by the parameters that actually decide whether a swap
-/// survives — not by a lookup table. The advantage over a printed cross-reference is
-/// that this can say <em>why</em>, and warn about the trade-off it is making.
+/// survives, rather than by a lookup table. The advantage over a printed cross-reference
+/// is that this can say <em>why</em> a part fits, and warn about the trade-off it makes.
+///
+/// It works on the same <see cref="PartDefinition"/> the editor places and the simulator
+/// emits. One catalogue: a part cannot be rated one way for substitution and another way
+/// for simulation, because there is only one of it.
 /// </summary>
 public static class Substitution
 {
@@ -71,29 +75,63 @@ public static class Substitution
         new(ParamKey.Vf,   Compare.AtMost,  Severity.Caution),
     ];
 
-    public static IReadOnlyList<Rule> RulesFor(PartCategory c) => c switch
+    private static readonly Rule[] RegulatorRules =
+    [
+        new(ParamKey.Vout,    Compare.AtLeast, Severity.Blocking),
+        new(ParamKey.IoutMax, Compare.AtLeast, Severity.Blocking),
+        new(ParamKey.VinMax,  Compare.AtLeast, Severity.Serious),
+        new(ParamKey.Dropout, Compare.AtMost,  Severity.Caution),
+    ];
+
+    private static readonly Rule[] OpAmpRules =
+    [
+        new(ParamKey.Gbw,       Compare.AtLeast, Severity.Serious),
+        new(ParamKey.SlewRate,  Compare.AtLeast, Severity.Serious),
+        new(ParamKey.Vio,       Compare.AtMost,  Severity.Caution),
+        new(ParamKey.VinMax,    Compare.AtLeast, Severity.Blocking),
+    ];
+
+    /// <summary>Two parts are only comparable when they are the same kind of thing.</summary>
+    public static string FamilyOf(PartDefinition p) => p.Symbol switch
     {
-        PartCategory.Bjt => BjtRules,
-        PartCategory.Mosfet => MosfetRules,
-        PartCategory.Diode or PartCategory.Zener => DiodeRules,
+        SymbolShape.BjtNpn or SymbolShape.BjtPnp => "bjt",
+        SymbolShape.MosfetN or SymbolShape.MosfetP => "mosfet",
+        SymbolShape.Diode or SymbolShape.Led or SymbolShape.Zener => "diode",
+        SymbolShape.Box when p.Prefix == "R" => "resistor",
+        SymbolShape.CapacitorNonPolar or SymbolShape.CapacitorPolarised => "capacitor",
+        SymbolShape.Inductor => "inductor",
+        SymbolShape.IcBody when p.Has(ParamKey.Vout) => "regulator",
+        SymbolShape.IcBody when p.Has(ParamKey.Gbw) => "opamp",
+        _ => "other:" + p.Symbol,
+    };
+
+    public static IReadOnlyList<Rule> RulesFor(PartDefinition p) => FamilyOf(p) switch
+    {
+        "bjt" => BjtRules,
+        "mosfet" => MosfetRules,
+        "diode" => DiodeRules,
+        "regulator" => RegulatorRules,
+        "opamp" => OpAmpRules,
         _ => [],
     };
 
     /// <summary>
     /// Candidates that can stand in for <paramref name="original"/>, best first.
     /// Unusable candidates are dropped unless <paramref name="includeRejected"/> —
-    /// "why can't I use this one" is a question worth being able to answer.
+    /// "why can't I use this one" deserves an answer too.
     /// </summary>
     public static IReadOnlyList<Substitute> Find(
-        Part original, IEnumerable<Part> library, int limit = 10, bool includeRejected = false)
+        PartDefinition original, IEnumerable<PartDefinition> library,
+        int limit = 10, bool includeRejected = false)
     {
-        var rules = RulesFor(original.Category);
+        var rules = RulesFor(original);
+        var family = FamilyOf(original);
         var results = new List<Substitute>();
 
         foreach (var candidate in library)
         {
-            if (candidate.Mpn.Equals(original.Mpn, StringComparison.OrdinalIgnoreCase)) continue;
-            if (candidate.Category != original.Category) continue;
+            if (candidate.Key.Equals(original.Key, StringComparison.OrdinalIgnoreCase)) continue;
+            if (FamilyOf(candidate) != family) continue;
 
             var sub = Evaluate(original, candidate, rules);
             if (sub.Usable || includeRejected) results.Add(sub);
@@ -104,7 +142,7 @@ public static class Substitution
                           .Take(limit)];
     }
 
-    private static Substitute Evaluate(Part original, Part candidate, IReadOnlyList<Rule> rules)
+    private static Substitute Evaluate(PartDefinition original, PartDefinition candidate, IReadOnlyList<Rule> rules)
     {
         var findings = new List<Finding>();
         double score = 0;
@@ -125,8 +163,8 @@ public static class Substitution
                 continue;
             }
 
-            // headroom > 1 means the candidate has margin over the original, whichever
-            // direction "better" runs for this parameter.
+            // Headroom above one means the candidate has margin, whichever direction
+            // "better" runs for this parameter.
             double headroom = rule.Cmp == Compare.AtLeast ? c.Value / o.Value : o.Value / c.Value;
             string unit = Eng.UnitOf(rule.Key);
 
@@ -152,19 +190,18 @@ public static class Substitution
                         rule.Key.ToString(), $"{headroom:F0}"));
 
                 // Reward adequate margin, then stop: a 15 A transistor in a 200 mA socket
-                // is not a better answer, just a bigger one. Past 12x it scores worse than
-                // a snug fit, because it usually is worse.
+                // is not a better answer, just a bigger one.
                 score += headroom > 12 ? 1.0 : Math.Min(headroom, 2.5);
             }
             scored++;
         }
 
         // Physical fit outranks headroom. A part that beats the original on every
-        // electrical number is still the wrong answer if it will not go in the hole.
+        // electrical number is still wrong if it will not go in the hole.
         if (!string.Equals(candidate.Package, original.Package, StringComparison.OrdinalIgnoreCase))
         {
             findings.Add(new Finding(Severity.Serious, FindingCode.DifferentPackage,
-                candidate.Package, original.Package));
+                candidate.Package ?? "—", original.Package ?? "—"));
             score += Penalty(Severity.Serious);
         }
         else score += 2.0;
@@ -194,28 +231,26 @@ public static class Substitution
     };
 
     /// <summary>
-    /// Picks wording that matches the direction of the parameter. "Below the original"
-    /// is only true for ratings where more is better; for R_DS(on) or V_F the candidate
-    /// failing means it is *higher*, and saying "below" reads as nonsense to a technician.
+    /// Wording that matches the direction of the parameter. "Below the original" is
+    /// nonsense for R_DS(on) or V_F, where failing means the candidate is higher.
     /// </summary>
     private static FindingCode Pick(Rule rule) => rule.Key switch
     {
-        ParamKey.Ft or ParamKey.Trr or ParamKey.Qg => FindingCode.SlowerSwitching,
+        ParamKey.Ft or ParamKey.Trr or ParamKey.Qg or ParamKey.Gbw or ParamKey.SlewRate
+            => FindingCode.SlowerSwitching,
         _ when rule.Cmp == Compare.AtMost => FindingCode.HigherLoss,
         _ => FindingCode.BelowRating,
     };
 
-    private static void ScoreGain(Part original, Part candidate, List<Finding> findings)
+    private static void ScoreGain(PartDefinition original, PartDefinition candidate, List<Finding> findings)
     {
         double? oMin = original.Get(ParamKey.HfeMin), cMin = candidate.Get(ParamKey.HfeMin);
         double? oMax = original.Get(ParamKey.HfeMax), cMax = candidate.Get(ParamKey.HfeMax);
         if (oMin is null || cMin is null) return;
 
         if (cMin < oMin * 0.7)
-            findings.Add(new Finding(Severity.Serious, FindingCode.GainLower,
-                $"{cMin:F0}", $"{oMin:F0}"));
+            findings.Add(new Finding(Severity.Serious, FindingCode.GainLower, $"{cMin:F0}", $"{oMin:F0}"));
         else if (oMax is not null && cMax is not null && cMax > oMax * 2.5)
-            findings.Add(new Finding(Severity.Caution, FindingCode.GainHigher,
-                $"{cMax:F0}", $"{oMax:F0}"));
+            findings.Add(new Finding(Severity.Caution, FindingCode.GainHigher, $"{cMax:F0}", $"{oMax:F0}"));
     }
 }

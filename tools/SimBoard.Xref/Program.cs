@@ -1,4 +1,4 @@
-using SimBoard.Parts;
+using SimBoard.Document;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // เบอร์แทน / cross-reference — ask what can stand in for a part, and why.
@@ -15,18 +15,18 @@ if (query is null)
     Console.WriteLine(lang == Lang.Th
         ? "ใช้: xref <เบอร์อุปกรณ์> [--en] [--all]"
         : "usage: xref <part number> [--en] [--all]");
-    Console.WriteLine($"\n{PartLibrary.All.Count} parts in the library:");
-    foreach (var g in PartLibrary.All.GroupBy(p => p.Category))
-        Console.WriteLine($"  {g.Key,-8} {string.Join("  ", g.Select(p => p.Mpn))}");
+    Console.WriteLine($"\n{PartCatalog.All.Count} parts in the library:");
+    foreach (var g in PartCatalog.All.GroupBy(Substitution.FamilyOf))
+        Console.WriteLine($"  {g.Key,-8} {string.Join("  ", g.Select(p => p.Mpn ?? p.Key))}");
     return 2;
 }
 
-var original = PartLibrary.Find(query);
+var original = PartCatalog.Find(query);
 if (original is null)
 {
     Console.WriteLine(lang == Lang.Th
-        ? $"ไม่พบเบอร์ '{query}' ในคลัง — คลังตอนนี้มี {PartLibrary.All.Count} เบอร์"
-        : $"'{query}' is not in the library — it currently holds {PartLibrary.All.Count} parts.");
+        ? $"ไม่พบเบอร์ '{query}' ในคลัง — คลังตอนนี้มี {PartCatalog.All.Count} เบอร์"
+        : $"'{query}' is not in the library — it currently holds {PartCatalog.All.Count} parts.");
     return 1;
 }
 
@@ -36,13 +36,13 @@ if (original.Provenance == Provenance.Unverified)
         ? "\n⚠  ตัวเลขในคลังนี้ยังไม่ได้ทานกับดาต้าชีต — ใช้เป็นตัวช่วยคัดกรอง ไม่ใช่คำตอบสุดท้าย\n"
         : "\n⚠  These figures have not been checked against datasheets — use them to narrow the field, not to decide.\n");
 
-Console.WriteLine($"── {original.Mpn} · {original.Description}");
+Console.WriteLine($"── {original.Mpn ?? original.Key} · {original.NameTh}");
 Console.WriteLine($"   {original.Package}" +
                   (original.Pinout is { Length: > 0 } pin ? $" · ขา {pin}" : "") +
                   (original.Polarity != Polarity.None ? $" · {original.Polarity}" : ""));
 Console.WriteLine($"   {Params(original)}");
 
-var subs = Substitution.Find(original, PartLibrary.All, limit: 8, includeRejected: showRejected);
+var subs = Substitution.Find(original, PartCatalog.All, limit: 8, includeRejected: showRejected);
 if (subs.Count == 0)
 {
     Console.WriteLine(lang == Lang.Th
@@ -60,8 +60,8 @@ foreach (var s in subs)
     rank++;
     string mark = !s.Usable ? "✕" : s.NeedsAttention ? "!" : "✓";
     Console.WriteLine();
-    Console.WriteLine($"  {mark} {rank}. {s.Part.Mpn,-9} {s.Part.Package,-7} " +
-                      $"{(s.Part.Pinout is { Length: > 0 } p ? p : "   "),-4} {s.Part.Description}");
+    Console.WriteLine($"  {mark} {rank}. {s.Part.Mpn ?? s.Part.Key,-9} {s.Part.Package,-7} " +
+                      $"{(s.Part.Pinout is { Length: > 0 } p ? p : "   "),-4} {s.Part.NameTh}");
     Console.WriteLine($"       {Params(s.Part)}");
 
     foreach (var f in s.Findings.Where(f => f.Code != FindingCode.UnverifiedData)
@@ -82,17 +82,18 @@ static string Bullet(Severity s) => s switch
     _ => "·",
 };
 
-static string Params(Part p) => p.Category switch
+// The family decides which figures matter — nobody wants R_DS(on) on a diode.
+static string Params(PartDefinition p) => Substitution.FamilyOf(p) switch
 {
-    PartCategory.Bjt =>
+    "bjt" =>
         $"Vceo {Eng.Format(p, ParamKey.Vceo)} · Ic {Eng.Format(p, ParamKey.Ic)} · " +
         $"Ptot {Eng.Format(p, ParamKey.Ptot)} · hFE {p.Get(ParamKey.HfeMin):F0}–{p.Get(ParamKey.HfeMax):F0} · " +
         $"fT {Eng.Format(p, ParamKey.Ft)}",
-    PartCategory.Mosfet =>
+    "mosfet" =>
         $"Vds {Eng.Format(p, ParamKey.Vds)} · Id {Eng.Format(p, ParamKey.Id)} · " +
         $"RdsOn {Eng.Format(p, ParamKey.RdsOn)} · Vgs(th) ≤{Eng.Format(p, ParamKey.VgsThMax)} · " +
         $"Qg {Eng.Format(p, ParamKey.Qg)}",
-    PartCategory.Diode =>
+    "diode" =>
         $"Vrrm {Eng.Format(p, ParamKey.Vrrm)} · If {Eng.Format(p, ParamKey.If)} · " +
         $"Vf {Eng.Format(p, ParamKey.Vf)} · trr {Eng.Format(p, ParamKey.Trr)}",
     _ => string.Join(" · ", p.Params.Select(kv => $"{kv.Key} {Eng.Format(kv.Value, Eng.UnitOf(kv.Key))}")),

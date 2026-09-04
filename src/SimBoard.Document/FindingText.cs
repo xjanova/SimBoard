@@ -1,5 +1,6 @@
-namespace SimBoard.Parts;
+namespace SimBoard.Document;
 
+/// <summary>Which language the findings render in. Mirrors the app's own Lang.</summary>
 public enum Lang { Th, En }
 
 /// <summary>

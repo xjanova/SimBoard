@@ -151,6 +151,37 @@ public sealed record PartDefinition
     /// <summary>Present for digital and firmware-driven parts. Null for analog primitives.</summary>
     public DigitalSpec? Digital { get; init; }
 
+    /// <summary>
+    /// Datasheet ratings, used to decide substitutions. A parameter that is not known is
+    /// absent rather than zero — zero reads as "rated for nothing" and would silently
+    /// fail every rule that compares against it.
+    /// </summary>
+    public IReadOnlyDictionary<ParamKey, double> Params { get; init; } =
+        new Dictionary<ParamKey, double>();
+
+    /// <summary>Device polarity. Substituting across it is never valid.</summary>
+    public Polarity Polarity { get; init; } = Polarity.None;
+
+    /// <summary>
+    /// Lead order as printed, e.g. "EBC" or "CBE" — read left to right with the flat or
+    /// labelled face toward you and the leads down.
+    ///
+    /// Two transistors can match on every electrical figure and still destroy each other's
+    /// circuit because the legs are in a different order, and printed cross-reference
+    /// tables routinely omit it. It is a first-class field here for that reason.
+    /// </summary>
+    public string? Pinout { get; init; }
+
+    /// <summary>Where the figures came from. Never inferred; always declared.</summary>
+    public Provenance Provenance { get; init; } = Provenance.Unverified;
+
+    /// <summary>Manufacturer, when the part is a specific device rather than a generic.</summary>
+    public string? Manufacturer { get; init; }
+
+    public double? Get(ParamKey key) => Params.TryGetValue(key, out var v) ? v : null;
+
+    public bool Has(ParamKey key) => Params.ContainsKey(key);
+
     /// <summary>Body size in grid steps. Pins are placed on the edges of this box.</summary>
     public int BodyWidth { get; init; } = 2;
     public int BodyHeight { get; init; } = 2;

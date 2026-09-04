@@ -466,28 +466,35 @@ public static class PartCatalog
 
     // ── the catalog ──────────────────────────────────────────────────────
 
-    public static IReadOnlyList<PartDefinition> All { get; } =
+    // Declared before All: static initialisers run in declaration order, and All
+    // spreads this one.
+    private static IReadOnlyList<PartDefinition> Core { get; } =
     [
-        Resistor, Capacitor, CapacitorPolarised, Inductor, Potentiometer,
-        Diode("D-1N4148", "1N4148", "ไดโอดสวิตชิ่งเร็ว", "D1N4148"),
-        Diode("D-1N4007", "1N4007", "ไดโอดเรกติไฟเออร์ 1000V", "D1N4007"),
-        Diode("D-1N5819", "1N5819", "ไดโอดชอตต์กี 40V", "D1N5819", "แรงดันตกต่ำ ~0.45V เหมาะกับวงจรประหยัดไฟ"),
-        Led,
-        Bjt("Q-2N3904", "2N3904", "ทรานซิสเตอร์ NPN", SymbolShape.BjtNpn, "Q2N3904"),
-        Bjt("Q-2N3906", "2N3906", "ทรานซิสเตอร์ PNP", SymbolShape.BjtPnp, "Q2N3906"),
-        Bjt("Q-BC547", "BC547", "ทรานซิสเตอร์ NPN ตระกูลยุโรป", SymbolShape.BjtNpn, "QBC547"),
-        Mosfet("Q-IRFZ44N", "IRFZ44N", "มอสเฟต N-channel 55V 49A", SymbolShape.MosfetN, "IRFZ44N"),
-        Mosfet("Q-IRLZ44N", "IRLZ44N", "มอสเฟต N-channel ขับด้วยลอจิก 5V", SymbolShape.MosfetN, "IRLZ44N"),
+        Resistor, Capacitor, CapacitorPolarised, Inductor, Potentiometer, Led, Ldr,
         Vdc, Vpulse, Ground,
         Ne555, Lm358,
-        Regulator("LM7805", "LM7805", "เรกูเลเตอร์ 5V", ["IN", "GND", "OUT"],
-            "ต้องมี C 0.33µ ที่ขาเข้าและ 0.1µ ที่ขาออก ไม่งั้นแกว่ง · แรงดันเข้าต้องสูงกว่าออกอย่างน้อย 2V"),
-        Regulator("LM317", "LM317", "เรกูเลเตอร์ปรับค่าได้", ["IN", "ADJ", "OUT"],
-            "Vout = 1.25 × (1 + R2/R1) · ต้องมีโหลดขั้นต่ำ ~10 mA ถึงจะคุมแรงดันได้"),
         Esp32, Atmega328,
-        Ds18b20, Dht22, Mpu6050, Ssd1306, HcSr04, Pir, Ldr,
+        Ds18b20, Dht22, Mpu6050, Ssd1306, HcSr04, Pir,
         RelayModule, Servo, PushButton,
         Header(2), Header(3), Header(4),
+    ];
+
+    /// <summary>
+    /// Everything the editor can place. The core entries below are the symbols and
+    /// sources that are not really "parts" plus the boards people build around; the
+    /// device families live in Catalog/ so they can grow independently.
+    /// </summary>
+    public static IReadOnlyList<PartDefinition> All { get; } =
+    [
+        .. Core,
+        .. CatalogPassive.Parts,
+        .. CatalogBjt.Parts,
+        .. CatalogMosfet.Parts,
+        .. CatalogDiode.Parts,
+        .. CatalogRegulator.Parts,
+        .. CatalogOpAmp.Parts,
+        .. CatalogLogic.Parts,
+        .. CatalogSensor.Parts,
     ];
 
     private static readonly Dictionary<string, PartDefinition> Index =

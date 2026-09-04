@@ -6,7 +6,6 @@
   <Folder Name="/src/">
     <Project Path="src/SimBoard.App/SimBoard.App.csproj" />
     <Project Path="src/SimBoard.Document/SimBoard.Document.csproj" />
-    <Project Path="src/SimBoard.Parts/SimBoard.Parts.csproj" />
     <Project Path="src/SimBoard.Spice/SimBoard.Spice.csproj" />
   </Folder>
   <Folder Name="/tests/">

@@ -6,6 +6,7 @@
     <RootNamespace>SimBoard.Xref</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SimBoard.Parts\SimBoard.Parts.csproj" />
+    <ProjectReference Include="..\..\src\SimBoard.Document\SimBoard.Document.csproj" />
+    <ProjectReference Include="..\..\src\SimBoard.Document\SimBoard.Document.csproj" />
   </ItemGroup>
 </Project>
